@@ -82,6 +82,26 @@ add_basemap_layers <- function(map) {
     )
 }
 
+make_leaflet_responsive <- function(map) {
+  htmlwidgets::onRender(
+    map,
+    "function(el, x) {
+      var map = this;
+      function refresh() {
+        window.setTimeout(function() {
+          map.invalidateSize(true);
+        }, 80);
+      }
+      refresh();
+      window.addEventListener('resize', refresh, { passive: true });
+      if (window.ResizeObserver) {
+        var target = el.closest('.main-map-frame, .support-map-frame') || el.parentElement || el;
+        new ResizeObserver(refresh).observe(target);
+      }
+    }"
+  )
+}
+
 make_main_map <- function(site_data) {
   summary_sf <- site_data$neighborhood_summary
   crime_popups <- neighborhood_popup_html(summary_sf, "crime_count", "Crime incidents")
@@ -240,7 +260,7 @@ make_main_map <- function(site_data) {
         "Neighborhood permit counts",
         "Neighborhood demolition permits"
       ),
-      options = leaflet::layersControlOptions(collapsed = FALSE, position = "topright")
+      options = leaflet::layersControlOptions(collapsed = TRUE, position = "topright")
     ) |>
     leaflet::hideGroup("Permits") |>
     leaflet::hideGroup("Demolition permits") |>
@@ -248,7 +268,7 @@ make_main_map <- function(site_data) {
     leaflet::hideGroup("Neighborhood permit counts") |>
     leaflet::hideGroup("Neighborhood demolition permits")
 
-  map
+  make_leaflet_responsive(map)
 }
 
 make_summary_map <- function(data, value_col, title, palette, value_format = format_number_label) {
@@ -267,7 +287,7 @@ make_summary_map <- function(data, value_col, title, palette, value_format = for
     )
   })
 
-  leaflet::leaflet(data) |>
+  map <- leaflet::leaflet(data) |>
     leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) |>
     leaflet::setView(
       lng = unname(site_config$map$center[["lng"]]),
@@ -289,4 +309,6 @@ make_summary_map <- function(data, value_col, title, palette, value_format = for
       title = title,
       opacity = 0.85
     )
+
+  make_leaflet_responsive(map)
 }

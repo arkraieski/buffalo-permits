@@ -47,7 +47,7 @@ permit_neighborhood_rank <- site_data$permit_neighborhoods |>
   )
 ```
 
-:::::::::::::::::::::::::::::::::::::::: page-shell
+::::::::::::::::::::::::::::::::::::::::: page-shell
 :::::::::::: masthead
 # Crime incidents and permits, refreshed daily.
 

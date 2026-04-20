@@ -13,7 +13,6 @@ format:
     theme: cosmo
     css: styles.css
     toc: false
-    page-layout: full
     code-fold: false
 
 editor: visual
