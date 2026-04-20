@@ -82,6 +82,14 @@ add_basemap_layers <- function(map) {
     )
 }
 
+build_leaflet_options <- function() {
+  leaflet::leafletOptions(
+    zoomControl = TRUE,
+    minZoom = site_config$map$min_zoom,
+    maxZoom = site_config$map$max_zoom
+  )
+}
+
 make_leaflet_responsive <- function(map) {
   htmlwidgets::onRender(
     map,
@@ -164,7 +172,7 @@ make_main_map <- function(site_data) {
   )
 
   map <- leaflet::leaflet(
-    options = leaflet::leafletOptions(zoomControl = TRUE, minZoom = 10)
+    options = build_leaflet_options()
   ) |>
     add_basemap_layers() |>
     leaflet::setView(
@@ -287,7 +295,7 @@ make_summary_map <- function(data, value_col, title, palette, value_format = for
     )
   })
 
-  map <- leaflet::leaflet(data) |>
+  map <- leaflet::leaflet(data, options = build_leaflet_options()) |>
     leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) |>
     leaflet::setView(
       lng = unname(site_config$map$center[["lng"]]),

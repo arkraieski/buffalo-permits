@@ -8,7 +8,9 @@ site_config <- list(
   ),
   map = list(
     center = c(lng = -78.8784, lat = 42.8864),
-    zoom = 12
+    zoom = 12,
+    min_zoom = 10,
+    max_zoom = 16
   ),
   palette = list(
     crime_points = "#d1495b",
