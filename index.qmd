@@ -1,5 +1,5 @@
 ---
-title: "Buffalo Crime + Permits Tracker"
+title: "Buffalo Permits + Crime Tracker"
 format:
   html:
     title-block-banner: false
@@ -146,7 +146,7 @@ permit_daily_chart <- ggplot(permit_daily_counts, aes(x = event_date, y = total)
 ::::::::::::::::::::::::::::::::::::::::: page-shell
 :::::::::::: masthead
 ::::::: masthead-copy
-# Crime incidents and permits, refreshed daily.
+# Permits and crime incidents, refreshed daily.
 
 ::::::::: meta-row
 ::::: meta-item
