@@ -10,6 +10,12 @@ execute:
 ---
 
 ```{r}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(scales)
+library(sf)
+
 source("R/utils.R")
 source("R/data_fetch.R")
 source("R/data_prep.R")
@@ -28,27 +34,118 @@ window_label <- sprintf(
 )
 
 crime_neighborhood_rank <- site_data$crime_neighborhoods |>
-  sf::st_drop_geometry() |>
-  dplyr::arrange(dplyr::desc(crime_count), neighborhood) |>
-  dplyr::slice_head(n = 10) |>
-  dplyr::transmute(
+  st_drop_geometry() |>
+  arrange(desc(crime_count), neighborhood) |>
+  slice_head(n = 10) |>
+  transmute(
     Neighborhood = neighborhood,
     `Crime incidents` = format_number_label(crime_count)
   )
 
 permit_neighborhood_rank <- site_data$permit_neighborhoods |>
-  sf::st_drop_geometry() |>
-  dplyr::arrange(dplyr::desc(value_sum), neighborhood) |>
-  dplyr::slice_head(n = 10) |>
-  dplyr::transmute(
+  st_drop_geometry() |>
+  arrange(desc(value_sum), neighborhood) |>
+  slice_head(n = 10) |>
+  transmute(
     Neighborhood = neighborhood,
     `Declared permit value` = format_currency_label(value_sum),
     Permits = format_number_label(permit_count)
   )
+
+crime_daily_counts <- site_data$crime_sf |>
+  st_drop_geometry() |>
+  count(event_date, name = "total") |>
+  right_join(
+    tibble::tibble(event_date = seq(window$start_date, window$end_date, by = "day")),
+    by = "event_date"
+  ) |>
+  mutate(total = coalesce(total, 0L)) |>
+  arrange(event_date)
+
+permit_daily_counts <- site_data$permit_sf |>
+  st_drop_geometry() |>
+  count(event_date, name = "total") |>
+  right_join(
+    tibble::tibble(event_date = seq(window$start_date, window$end_date, by = "day")),
+    by = "event_date"
+  ) |>
+  mutate(total = coalesce(total, 0L)) |>
+  arrange(event_date)
+
+axis_breaks <- seq(window$start_date, window$end_date, by = "5 days")
+
+crime_daily_chart <- ggplot(crime_daily_counts, aes(x = event_date, y = total)) +
+  geom_col(width = 0.82, fill = "#c44558") +
+  scale_x_date(
+    breaks = axis_breaks,
+    labels = label_date(format = "%b\n%d"),
+    expand = expansion(mult = c(0.01, 0.01))
+  ) +
+  scale_y_continuous(
+    labels = label_number(accuracy = 1),
+    expand = expansion(mult = c(0, 0.06))
+  ) +
+  labs(x = "Date", y = "Crime incidents") +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "#dde4ec", linewidth = 0.5),
+    axis.line.x = element_line(color = "#b9c4d0", linewidth = 0.5),
+    axis.title.x = element_text(size = 10, color = "#44515f", margin = margin(t = 10)),
+    axis.text.x = element_text(
+      angle = 0,
+      hjust = 0.5,
+      vjust = 0.5,
+      size = 8.5,
+      color = "#44515f"
+    ),
+    axis.text.y = element_text(size = 9, color = "#44515f"),
+    axis.title.y = element_text(size = 10, color = "#44515f", margin = margin(r = 10)),
+    plot.margin = margin(12, 12, 26, 8)
+  ) +
+  coord_cartesian(clip = "off")
+
+permit_daily_chart <- ggplot(permit_daily_counts, aes(x = event_date, y = total)) +
+  geom_col(width = 0.82, fill = "#117a72") +
+  scale_x_date(
+    breaks = axis_breaks,
+    labels = label_date(format = "%b\n%d"),
+    expand = expansion(mult = c(0.01, 0.01))
+  ) +
+  scale_y_continuous(
+    labels = label_number(accuracy = 1),
+    expand = expansion(mult = c(0, 0.06))
+  ) +
+  labs(x = "Date", y = "Permits issued") +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "#dde4ec", linewidth = 0.5),
+    axis.line.x = element_line(color = "#b9c4d0", linewidth = 0.5),
+    axis.title.x = element_text(size = 10, color = "#44515f", margin = margin(t = 10)),
+    axis.text.x = element_text(
+      angle = 0,
+      hjust = 0.5,
+      vjust = 0.5,
+      size = 8.5,
+      color = "#44515f"
+    ),
+    axis.text.y = element_text(size = 9, color = "#44515f"),
+    axis.title.y = element_text(size = 10, color = "#44515f", margin = margin(r = 10)),
+    plot.margin = margin(12, 12, 26, 8)
+  ) +
+  coord_cartesian(clip = "off")
 ```
 
 ::::::::::::::::::::::::::::::::::::::::: page-shell
 :::::::::::: masthead
+::::::: masthead-copy
 # Crime incidents and permits, refreshed daily.
 
 ::::::::: meta-row
@@ -72,6 +169,11 @@ Updated
 :::
 :::::
 :::::::::
+:::::::
+
+::::::: masthead-visual
+![](assets/buffalo-public-domain-photos/aerial-downtown-buffalo-2018.jpg){.masthead-image fig-alt="Aerial view of downtown Buffalo, New York"}
+:::::::
 ::::::::::::
 
 ::::: section-block
@@ -109,6 +211,34 @@ make_summary_map(
 ::::::
 
 :::::::::::: section-block
+## Daily totals
+
+::::::::: chart-grid
+::: chart-card
+### Total crime incidents per day
+
+```{r}
+#| fig-width: 7
+#| fig-height: 4.8
+#| out-width: "100%"
+crime_daily_chart
+```
+:::
+
+::: chart-card
+### Total permits per day
+
+```{r}
+#| fig-width: 7
+#| fig-height: 4.8
+#| out-width: "100%"
+permit_daily_chart
+```
+:::
+:::::::::
+::::::::::::
+
+:::::::::::: section-block
 ## Neighborhood and category rankings
 
 ::::::::: table-stack
@@ -116,7 +246,7 @@ make_summary_map(
 ### Neighborhoods with the most crime incidents
 
 ```{r}
-knitr::kable(crime_neighborhood_rank, align = c("l", "r"))
+kable(crime_neighborhood_rank, align = c("l", "r"))
 ```
 :::
 
@@ -124,7 +254,7 @@ knitr::kable(crime_neighborhood_rank, align = c("l", "r"))
 ### Neighborhoods with the highest declared permit value
 
 ```{r}
-knitr::kable(permit_neighborhood_rank, align = c("l", "r", "r"))
+kable(permit_neighborhood_rank, align = c("l", "r", "r"))
 ```
 :::
 
@@ -136,9 +266,9 @@ knitr::kable(permit_neighborhood_rank, align = c("l", "r", "r"))
 #### Crime categories
 
 ```{r}
-knitr::kable(
+kable(
   site_data$top_crime_types |>
-    dplyr::mutate(n = format_number_label(n)),
+    mutate(n = format_number_label(n)),
   col.names = c("Category", "Incidents"),
   align = c("l", "r")
 )
@@ -149,9 +279,9 @@ knitr::kable(
 #### Permit types
 
 ```{r}
-knitr::kable(
+kable(
   site_data$top_permit_types |>
-    dplyr::mutate(n = format_number_label(n)),
+    mutate(n = format_number_label(n)),
   col.names = c("Type", "Permits"),
   align = c("l", "r")
 )

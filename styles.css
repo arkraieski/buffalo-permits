@@ -73,7 +73,43 @@ main.content.column-page,
 
 .masthead {
   margin: 0 0 2.25rem;
-  padding-top: 0.25rem;
+  padding: 1.4rem 0 2rem;
+  min-height: 460px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+  align-items: stretch;
+  gap: 2.25rem;
+}
+
+.masthead-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.masthead-visual {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.masthead-visual p,
+.masthead-visual .quarto-figure {
+  margin: 0;
+  width: 100%;
+}
+
+.masthead-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 32px;
+  box-shadow: 0 22px 48px rgba(15, 23, 32, 0.14);
 }
 
 .masthead h1 {
@@ -88,6 +124,7 @@ main.content.column-page,
   flex-wrap: wrap;
   gap: 0.8rem;
   margin-top: 1.2rem;
+  max-width: 540px;
 }
 
 .meta-item {
@@ -205,6 +242,39 @@ main.content.column-page,
   display: grid;
   gap: 1rem;
   min-width: 0;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  min-width: 0;
+}
+
+.chart-card {
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: visible;
+}
+
+.chart-card h3 {
+  margin-bottom: 0.8rem;
+}
+
+.chart-card img,
+.chart-card canvas,
+.chart-card svg {
+  max-width: 100%;
+}
+
+.chart-card .cell,
+.chart-card .cell-output,
+.chart-card .cell-output-display {
+  overflow: visible;
 }
 
 .table-card,
@@ -373,6 +443,7 @@ main.content.column-page,
   }
 
   .table-pair,
+  .chart-grid,
   .notes-grid {
     grid-template-columns: 1fr;
   }
@@ -383,8 +454,20 @@ main.content.column-page,
     padding: 1.1rem 0.85rem 3rem;
   }
 
+  .masthead {
+    padding: 1.05rem 0 1.15rem;
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
   .masthead h1 {
     max-width: none;
+  }
+
+  .masthead-image {
+    min-height: 240px;
+    border-radius: 24px;
   }
 
   .meta-row {

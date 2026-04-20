@@ -24,7 +24,28 @@ validate_required_columns <- function(data, required_columns, dataset_label) {
 }
 
 parse_socrata_datetime <- function(x) {
-  lubridate::ymd_hms(x, tz = site_config$timezone, quiet = TRUE)
+  if (inherits(x, "POSIXct")) {
+    return(lubridate::with_tz(x, tzone = site_config$timezone))
+  }
+
+  if (inherits(x, "Date")) {
+    return(as.POSIXct(x, tz = site_config$timezone))
+  }
+
+  parsed <- suppressWarnings(
+    lubridate::parse_date_time(
+      as.character(x),
+      orders = c(
+        "Ymd HMS", "Ymd HM", "Ymd",
+        "ymd HMS", "ymd HM", "ymd",
+        "mdY HMS", "mdY HM", "mdY"
+      ),
+      tz = site_config$timezone,
+      quiet = TRUE
+    )
+  )
+
+  as.POSIXct(parsed, tz = site_config$timezone)
 }
 
 attach_neighborhoods <- function(points_sf, neighborhoods) {

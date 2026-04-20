@@ -35,6 +35,7 @@ jobs:
             c(
               "dplyr",
               "glue",
+              "ggplot2",
               "htmltools",
               "httr2",
               "jsonlite",
