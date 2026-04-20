@@ -1,4 +1,7 @@
 /.quarto/
+/_site/
 **/*.quarto_ipynb
 *.Rproj
 .Rproj.user/
+*.html
+*.utf8.md
