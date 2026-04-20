@@ -1,7 +1,0 @@
----
-title: "About"
----
-
-This Quarto site tracks recent Buffalo crime incidents and permits using live Buffalo Open Data feeds.
-
-The current implementation focuses on the landing page and is designed to render as a static site on GitHub Actions each day.

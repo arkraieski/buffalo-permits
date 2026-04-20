@@ -4,41 +4,27 @@
     "href": "index.html",
     "title": "Buffalo Crime + Permits Tracker",
     "section": "",
-    "text": "Buffalo open data\n\n\n\n\nA simple 30-day snapshot of public safety activity and permit issuance across Buffalo, combining live incident points, permit points, and neighborhood-level context in one place.\n\n\n\n\nWindow\n\n\nMar 21, 2026 to Apr 19, 2026\n\n\n\n\nUpdated\n\n\nApr 19, 2026 11:18 PM EDT\n\n\n\n\n\n\n\n\nSummary\n\n\n\n\n\n\n\n\n\nCrime incidents\n698\nReported incidents in the rolling 30-day window.\n\n\nPermits issued\n921\nIssued permits in the same reporting window.\n\n\nDeclared permit value\n$101,413,225\nTotal declared value of work across 30-day permits.\n\n\nAverage permits per day\n31\nBased on a 30-day rolling window.\n\n\n\n\n\n\n\n\nMain map\n\n\n\nCrime incidents are shown first so the map stays readable at city scale. Turn on permit, demolition, or neighborhood layers from the control when you want to compare them.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNeighborhoods\n\n\n\nThis supporting map keeps the neighborhood view simple and focused instead of splitting attention across multiple smaller maps.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nRankings\n\n\n\n\n\n\n\n\n\n\n\n\n\nNeighborhood\nCrime incidents\n\n\n\n\nNorth Park\n59\n\n\nCentral\n36\n\n\nWest Side\n34\n\n\nHopkins-Tifft\n32\n\n\nBroadway Fillmore\n30\n\n\nElmwood Bryant\n30\n\n\nKensington-Bailey\n30\n\n\nAllentown\n28\n\n\nGenesee-Moselle\n26\n\n\nRiverside\n25\n\n\n\n\n\n\n\n\n\n\n\n\n\nNeighborhood\nDeclared permit value\nPermits\n\n\n\n\nCentral\n$32,678,662\n21\n\n\nDelavan Grider\n$26,675,675\n19\n\n\nUpper West Side\n$9,265,700\n25\n\n\nHopkins-Tifft\n$8,531,961\n29\n\n\nFillmore-Leroy\n$6,219,312\n16\n\n\nWest Hertel\n$3,446,141\n10\n\n\nElmwood Bidwell\n$2,771,678\n52\n\n\nElmwood Bryant\n$1,966,194\n45\n\n\nCentral Park\n$1,169,093\n45\n\n\nNorth Park\n$979,705\n68\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCategory\nIncidents\n\n\n\n\nLARCENY/THEFT\n438\n\n\nASSAULT\n91\n\n\nUUV\n68\n\n\nBURGLARY\n59\n\n\nROBBERY\n19\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nPermits\n\n\n\n\nPLUMBING\n240\n\n\nELECTRICAL\n239\n\n\nREPAIR\n217\n\n\nHEATING\n121\n\n\nREP-PLANS\n35\n\n\n\n\n\n\n\n\n\n\n\n\n\nMethod\n\n\n\n\n\n\n\n\nData is pulled from Buffalo Open Data during render rather than from local snapshots.\n\nCrime Incidents: https://data.buffalony.gov/d/d6g9-xbgu\nPermits: https://data.buffalony.gov/d/9p2d-f3yt\nNeighborhoods: https://data.buffalony.gov/d/ekfg-mtu8\n\n\n\n\nThe reporting window is calculated in America/New_York and includes today plus the previous 29 days. Crime data is preliminary, and both tables depend on upstream schema stability from Buffalo Open Data."
+    "text": "Window\n\n\nMar 21, 2026 to Apr 19, 2026\n\n\n\n\nUpdated\n\n\nApr 19, 2026 11:27 PM EDT\n\n\n\n\n\n\n\n\n\n\nCrime incidents\n698\nReported incidents in the rolling 30-day window.\n\n\nPermits issued\n921\nIssued permits in the same reporting window.\n\n\nDeclared permit value\n$101,413,225\nTotal declared value of work across 30-day permits.\n\n\nAverage permits per day\n31\nBased on a 30-day rolling window.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNeighborhood\nCrime incidents\n\n\n\n\nNorth Park\n59\n\n\nCentral\n36\n\n\nWest Side\n34\n\n\nHopkins-Tifft\n32\n\n\nBroadway Fillmore\n30\n\n\nElmwood Bryant\n30\n\n\nKensington-Bailey\n30\n\n\nAllentown\n28\n\n\nGenesee-Moselle\n26\n\n\nRiverside\n25\n\n\n\n\n\n\n\n\n\n\n\n\n\nNeighborhood\nDeclared permit value\nPermits\n\n\n\n\nCentral\n$32,678,662\n21\n\n\nDelavan Grider\n$26,675,675\n19\n\n\nUpper West Side\n$9,265,700\n25\n\n\nHopkins-Tifft\n$8,531,961\n29\n\n\nFillmore-Leroy\n$6,219,312\n16\n\n\nWest Hertel\n$3,446,141\n10\n\n\nElmwood Bidwell\n$2,771,678\n52\n\n\nElmwood Bryant\n$1,966,194\n45\n\n\nCentral Park\n$1,169,093\n45\n\n\nNorth Park\n$979,705\n68\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCategory\nIncidents\n\n\n\n\nLARCENY/THEFT\n438\n\n\nASSAULT\n91\n\n\nUUV\n68\n\n\nBURGLARY\n59\n\n\nROBBERY\n19\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nPermits\n\n\n\n\nPLUMBING\n240\n\n\nELECTRICAL\n239\n\n\nREPAIR\n217\n\n\nHEATING\n121\n\n\nREP-PLANS\n35\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nData is pulled from Buffalo Open Data during daily render:\n\nCrime Incidents: https://data.buffalony.gov/d/d6g9-xbgu\nPermits: https://data.buffalony.gov/d/9p2d-f3yt\nNeighborhoods: https://data.buffalony.gov/d/ekfg-mtu8\n\n\n\n\nThe reporting window is calculated in America/New_York and includes today plus the previous 29 days. Crime data is preliminary, and both tables depend on upstream schema stability from Buffalo Open Data."
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "This Quarto site tracks recent Buffalo crime incidents and permits using live Buffalo Open Data feeds.\nThe current implementation focuses on the landing page and is designed to render as a static site on GitHub Actions each day."
-  },
-  {
-    "objectID": "index.html#incidents-permits-and-neighborhood-overlays-in-one-view",
-    "href": "index.html#incidents-permits-and-neighborhood-overlays-in-one-view",
+    "objectID": "index.html#key-signals-from-the-current-30-day-window",
+    "href": "index.html#key-signals-from-the-current-30-day-window",
     "title": "Buffalo Crime + Permits Tracker",
     "section": "",
-    "text": "Crime and permit points are visible by default. Use the layer control to switch between neighborhood crime counts and neighborhood permit counts."
+    "text": "Crime incidents\n698\nReported incidents in the rolling 30-day window.\n\n\nPermits issued\n921\nIssued permits in the same reporting window.\n\n\nDeclared permit value\n$101,413,225\nTotal declared value of work across 30-day permits.\n\n\nAverage permits per day\n31\nBased on a 30-day rolling window."
   },
   {
-    "objectID": "index.html#incidents-and-permits-in-one-view",
-    "href": "index.html#incidents-and-permits-in-one-view",
+    "objectID": "index.html#neighborhoods-and-categories-worth-a-closer-look",
+    "href": "index.html#neighborhoods-and-categories-worth-a-closer-look",
     "title": "Buffalo Crime + Permits Tracker",
     "section": "",
-    "text": "Crime incidents are shown first so the map stays readable at city scale. Turn on permits or neighborhood overlays from the layer control when you want to compare layers."
+    "text": "Neighborhood\nCrime incidents\n\n\n\n\nNorth Park\n59\n\n\nCentral\n36\n\n\nWest Side\n34\n\n\nHopkins-Tifft\n32\n\n\nBroadway Fillmore\n30\n\n\nElmwood Bryant\n30\n\n\nKensington-Bailey\n30\n\n\nAllentown\n28\n\n\nGenesee-Moselle\n26\n\n\nRiverside\n25\n\n\n\n\n\n\n\n\n\n\n\n\n\nNeighborhood\nDeclared permit value\nPermits\n\n\n\n\nCentral\n$32,678,662\n21\n\n\nDelavan Grider\n$26,675,675\n19\n\n\nUpper West Side\n$9,265,700\n25\n\n\nHopkins-Tifft\n$8,531,961\n29\n\n\nFillmore-Leroy\n$6,219,312\n16\n\n\nWest Hertel\n$3,446,141\n10\n\n\nElmwood Bidwell\n$2,771,678\n52\n\n\nElmwood Bryant\n$1,966,194\n45\n\n\nCentral Park\n$1,169,093\n45\n\n\nNorth Park\n$979,705\n68\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCategory\nIncidents\n\n\n\n\nLARCENY/THEFT\n438\n\n\nASSAULT\n91\n\n\nUUV\n68\n\n\nBURGLARY\n59\n\n\nROBBERY\n19\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nPermits\n\n\n\n\nPLUMBING\n240\n\n\nELECTRICAL\n239\n\n\nREPAIR\n217\n\n\nHEATING\n121\n\n\nREP-PLANS\n35"
   },
   {
-    "objectID": "index.html#where-recent-crime-counts-are-concentrated",
-    "href": "index.html#where-recent-crime-counts-are-concentrated",
+    "objectID": "index.html#notes-and-sources",
+    "href": "index.html#notes-and-sources",
     "title": "Buffalo Crime + Permits Tracker",
     "section": "",
-    "text": "This supporting map keeps the neighborhood view simple and focused instead of splitting attention across multiple smaller maps."
-  },
-  {
-    "objectID": "index.html#incidents-permits-and-demolition-activity-in-one-view",
-    "href": "index.html#incidents-permits-and-demolition-activity-in-one-view",
-    "title": "Buffalo Crime + Permits Tracker",
-    "section": "",
-    "text": "Crime incidents are shown first so the map stays readable at city scale. Turn on permit, demolition, or neighborhood layers from the control when you want to compare them."
+    "text": "Data is pulled from Buffalo Open Data during daily render:\n\nCrime Incidents: https://data.buffalony.gov/d/d6g9-xbgu\nPermits: https://data.buffalony.gov/d/9p2d-f3yt\nNeighborhoods: https://data.buffalony.gov/d/ekfg-mtu8\n\n\n\n\nThe reporting window is calculated in America/New_York and includes today plus the previous 29 days. Crime data is preliminary, and both tables depend on upstream schema stability from Buffalo Open Data."
   }
 ]

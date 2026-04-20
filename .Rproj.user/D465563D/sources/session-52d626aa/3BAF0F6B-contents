@@ -49,15 +49,7 @@ permit_neighborhood_rank <- site_data$permit_neighborhoods |>
 
 :::::::::::::::::::::::::::::::::::::::: page-shell
 :::::::::::: masthead
-::: section-kicker
-Buffalo open data
-:::
-
 # Crime incidents and permits, refreshed daily.
-
-::: masthead-copy
-A simple 30-day snapshot of public safety activity and permit issuance across Buffalo, combining live incident points, permit points, and neighborhood-level context in one place.
-:::
 
 ::::::::: meta-row
 ::::: meta-item
@@ -83,13 +75,7 @@ Updated
 ::::::::::::
 
 ::::: section-block
-:::: section-heading
-::: section-kicker
-Summary
-:::
-
 ## Key signals from the current 30-day window
-::::
 
 ```{r}
 build_kpi_cards(site_data$kpis)
@@ -97,15 +83,7 @@ build_kpi_cards(site_data$kpis)
 :::::
 
 :::::: section-block
-:::: section-heading
-::: section-kicker
-Main map
-:::
-
 ## Incidents, permits, and demolition activity in one view
-
-Crime incidents are shown first so the map stays readable at city scale. Turn on permit, demolition, or neighborhood layers from the control when you want to compare them.
-::::
 
 ::: main-map-frame
 ```{r}
@@ -115,15 +93,7 @@ make_main_map(site_data)
 ::::::
 
 :::::: section-block
-:::: section-heading
-::: section-kicker
-Neighborhoods
-:::
-
 ## Where recent crime counts are concentrated
-
-This supporting map keeps the neighborhood view simple and focused instead of splitting attention across multiple smaller maps.
-::::
 
 ::: support-map-frame
 ```{r}
@@ -139,13 +109,7 @@ make_summary_map(
 ::::::
 
 :::::::::::: section-block
-:::: section-heading
-::: section-kicker
-Rankings
-:::
-
-## Neighborhoods and categories worth a closer look
-::::
+## Neighborhood and category rankings
 
 ::::::::: table-stack
 ::: table-card
@@ -199,13 +163,7 @@ knitr::kable(
 ::::::::::::
 
 :::::::: {.section-block .notes-block}
-:::: section-heading
-::: section-kicker
-Method
-:::
-
 ## Notes and sources
-::::
 
 ::::: notes-grid
 ::: note-card
