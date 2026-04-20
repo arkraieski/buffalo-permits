@@ -1,0 +1,221 @@
+---
+title: "Buffalo Crime + Permits Tracker"
+format:
+  html:
+    title-block-banner: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+source("R/utils.R")
+source("R/data_fetch.R")
+source("R/data_prep.R")
+source("R/maps.R")
+
+site_data <- build_site_data()
+window <- site_data$window
+generated_label <- format(
+  lubridate::with_tz(window$generated_at, tzone = site_config$timezone),
+  "%b %d, %Y %I:%M %p %Z"
+)
+window_label <- sprintf(
+  "%s to %s",
+  format_date_label(window$start_date),
+  format_date_label(window$end_date)
+)
+```
+
+:::::::::::::::::::::::::::::::::::::::::: hero-shell
+:::::::::::: hero-copy
+::: eyebrow
+Open Data Buffalo monitor
+:::
+
+# Daily view of Buffalo crime incidents and permits from the last 30 days.
+
+::: hero-text
+This landing page pulls directly from Buffalo Open Data and blends point-level activity with neighborhood context so the city's recent safety and development signals sit on one map.
+:::
+
+::::::::: hero-meta
+::::: meta-pill
+::: meta-label
+Reporting window
+:::
+
+::: meta-value
+`r window_label`
+:::
+:::::
+
+::::: meta-pill
+::: meta-label
+Last updated
+:::
+
+::: meta-value
+`r generated_label`
+:::
+:::::
+:::::::::
+::::::::::::
+
+::::: hero-panel
+::: hero-panel-label
+What is on the map
+:::
+
+::: hero-list
+-   Clustered crime incidents from the rolling 30-day window
+-   Clustered permits from the same period
+-   Neighborhood overlays for crime and permit counts
+:::
+:::::
+
+:::::: section-block
+:::: section-heading
+::: eyebrow
+Key signals
+:::
+
+## What changed in the last 30 days
+::::
+
+::: kpi-grid
+```{r}
+build_kpi_cards(site_data$kpis)
+```
+:::
+::::::
+
+:::::: section-block
+:::: section-heading
+::: eyebrow
+Main map
+:::
+
+## Incidents, permits, and neighborhood overlays in one view
+
+Crime and permit points are visible by default. Use the layer control to switch between neighborhood crime counts and neighborhood permit counts.
+::::
+
+::: map-panel
+```{r}
+make_main_map(site_data)
+```
+:::
+::::::
+
+:::::::: section-block
+:::: section-heading
+::: eyebrow
+Neighborhood context
+:::
+
+## Supporting maps under the main view
+::::
+
+::::: submap-grid
+::: submap-card
+### Crime counts by neighborhood
+
+Counts reflect reported incidents in the rolling 30-day window.
+
+```{r}
+make_summary_map(
+  site_data$crime_neighborhoods,
+  value_col = "crime_count",
+  title = "30-day crime count",
+  palette = site_config$palette$crime_fill,
+  value_format = format_number_label
+)
+```
+:::
+
+::: submap-card
+### Declared permit value by neighborhood
+
+Permit totals emphasize where the largest declared work value is currently concentrated.
+
+```{r}
+make_summary_map(
+  site_data$permit_neighborhoods,
+  value_col = "value_sum",
+  title = "30-day permit value",
+  palette = site_config$palette$permit_fill,
+  value_format = format_currency_label
+)
+```
+:::
+:::::
+::::::::
+
+:::::::: section-block
+:::: section-heading
+::: eyebrow
+Recent patterns
+:::
+
+## Top categories in the current window
+::::
+
+::::: table-grid
+::: table-card
+### Most common crime categories
+
+```{r}
+knitr::kable(
+  site_data$top_crime_types |>
+    dplyr::mutate(n = format_number_label(n)),
+  col.names = c("Crime category", "Incidents"),
+  align = c("l", "r")
+)
+```
+:::
+
+::: table-card
+### Most common permit types
+
+```{r}
+knitr::kable(
+  site_data$top_permit_types |>
+    dplyr::mutate(n = format_number_label(n)),
+  col.names = c("Permit type", "Permits"),
+  align = c("l", "r")
+)
+```
+:::
+:::::
+::::::::
+
+:::::::: {.section-block .methodology}
+:::: section-heading
+::: eyebrow
+Methodology
+:::
+
+## How this page is built
+::::
+
+::::: method-grid
+::: method-card
+### Sources
+
+Data is pulled from Buffalo Open Data at render time rather than from committed snapshots.
+
+-   [Crime Incidents](%60r%20site_config$source_urls$crime%60)
+-   [Permits](%60r%20site_config$source_urls$permits%60)
+-   [Neighborhoods](%60r%20site_config$source_urls$neighborhoods%60)
+:::
+
+::: method-card
+### Notes
+
+The window is calculated in `America/New_York` and includes today plus the previous 29 days. Crime data is preliminary and both datasets depend on upstream field stability from Buffalo Open Data.
+:::
+:::::
+::::::::
+::::::::::::::::::::::::::::::::::::::::::

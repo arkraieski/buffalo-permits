@@ -1,0 +1,220 @@
+---
+title: "Buffalo Crime + Permits Tracker"
+format:
+  html:
+    title-block-banner: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+source("R/utils.R")
+source("R/data_fetch.R")
+source("R/data_prep.R")
+source("R/maps.R")
+
+site_data <- build_site_data()
+window <- site_data$window
+generated_label <- format(
+  lubridate::with_tz(window$generated_at, tzone = site_config$timezone),
+  "%b %d, %Y %I:%M %p %Z"
+)
+window_label <- sprintf(
+  "%s to %s",
+  format_date_label(window$start_date),
+  format_date_label(window$end_date)
+)
+```
+
+::::: hero-shell
+::: hero-copy
+```         
+<div class="eyebrow">Open Data Buffalo monitor</div>
+<h1>Daily view of Buffalo crime incidents and permits from the last 30 days.</h1>
+<p class="hero-text">This landing page pulls directly from Buffalo Open Data and blends point-level activity with neighborhood context so the city’s recent safety and development signals sit on one map.</p>
+<div class="hero-meta">
+  <div class="meta-pill">
+    <span class="meta-label">Reporting window</span>
+    <span class="meta-value">`r window_label`</span>
+  </div>
+  <div class="meta-pill">
+    <span class="meta-label">Last updated</span>
+    <span class="meta-value">`r generated_label`</span>
+  </div>
+</div>
+```
+:::
+
+::: hero-panel
+```         
+<div class="hero-panel-label">What is on the map</div>
+<ul class="hero-list">
+  <li>Clustered crime incidents from the rolling 30-day window</li>
+  <li>Clustered permits from the same period</li>
+  <li>Neighborhood overlays for crime and permit counts</li>
+</ul>
+```
+:::
+:::::
+
+<section class="section-block">
+
+::: section-heading
+```         
+<div class="eyebrow">Key signals</div>
+<h2>What changed in the last 30 days</h2>
+```
+:::
+
+::: kpi-grid
+```{r}
+build_kpi_cards(site_data$kpis)
+```
+:::
+
+</section>
+
+<section class="section-block">
+
+::: section-heading
+```         
+<div class="eyebrow">Main map</div>
+<h2>Incidents, permits, and neighborhood overlays in one view</h2>
+<p>Crime and permit points are visible by default. Use the layer control to switch between neighborhood crime counts and neighborhood permit counts.</p>
+```
+:::
+
+::: map-panel
+```{r}
+make_main_map(site_data)
+```
+:::
+
+</section>
+
+<section class="section-block">
+
+::: section-heading
+```         
+<div class="eyebrow">Neighborhood context</div>
+<h2>Supporting maps under the main view</h2>
+```
+:::
+
+::: submap-grid
+```         
+<article class="submap-card">
+  <h3>Crime counts by neighborhood</h3>
+  <p>Counts reflect reported incidents in the rolling 30-day window.</p>
+```
+
+```{r}
+make_summary_map(
+  site_data$crime_neighborhoods,
+  value_col = "crime_count",
+  title = "30-day crime count",
+  palette = site_config$palette$crime_fill,
+  value_format = format_number_label
+)
+```
+
+```         
+</article>
+<article class="submap-card">
+  <h3>Declared permit value by neighborhood</h3>
+  <p>Permit totals emphasize where the largest declared work value is currently concentrated.</p>
+```
+
+```{r}
+make_summary_map(
+  site_data$permit_neighborhoods,
+  value_col = "value_sum",
+  title = "30-day permit value",
+  palette = site_config$palette$permit_fill,
+  value_format = format_currency_label
+)
+```
+
+```         
+</article>
+```
+:::
+
+</section>
+
+<section class="section-block">
+
+::: section-heading
+```         
+<div class="eyebrow">Recent patterns</div>
+<h2>Top categories in the current window</h2>
+```
+:::
+
+::: table-grid
+```         
+<article class="table-card">
+  <h3>Most common crime categories</h3>
+```
+
+```{r}
+knitr::kable(
+  site_data$top_crime_types |>
+    dplyr::mutate(n = format_number_label(n)),
+  col.names = c("Crime category", "Incidents"),
+  align = c("l", "r")
+)
+```
+
+```         
+</article>
+<article class="table-card">
+  <h3>Most common permit types</h3>
+```
+
+```{r}
+knitr::kable(
+  site_data$top_permit_types |>
+    dplyr::mutate(n = format_number_label(n)),
+  col.names = c("Permit type", "Permits"),
+  align = c("l", "r")
+)
+```
+
+```         
+</article>
+```
+:::
+
+</section>
+
+<section class="section-block methodology">
+
+::: section-heading
+```         
+<div class="eyebrow">Methodology</div>
+<h2>How this page is built</h2>
+```
+:::
+
+::: method-grid
+```         
+<article class="method-card">
+  <h3>Sources</h3>
+  <p>Data is pulled from Buffalo Open Data at render time rather than from committed snapshots.</p>
+  <ul>
+    <li><a href="`r site_config$source_urls$crime`">Crime Incidents</a></li>
+    <li><a href="`r site_config$source_urls$permits`">Permits</a></li>
+    <li><a href="`r site_config$source_urls$neighborhoods`">Neighborhoods</a></li>
+  </ul>
+</article>
+<article class="method-card">
+  <h3>Notes</h3>
+  <p>The window is calculated in `America/New_York` and includes today plus the previous 29 days. Crime data is preliminary and both datasets depend on upstream field stability from Buffalo Open Data.</p>
+</article>
+```
+:::
+
+</section>

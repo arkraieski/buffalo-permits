@@ -1,0 +1,228 @@
+---
+title: "Buffalo Crime + Permits Tracker"
+format:
+  html:
+    title-block-banner: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+source("R/utils.R")
+source("R/data_fetch.R")
+source("R/data_prep.R")
+source("R/maps.R")
+
+site_data <- build_site_data()
+window <- site_data$window
+generated_label <- format(
+  lubridate::with_tz(window$generated_at, tzone = site_config$timezone),
+  "%b %d, %Y %I:%M %p %Z"
+)
+window_label <- sprintf(
+  "%s to %s",
+  format_date_label(window$start_date),
+  format_date_label(window$end_date)
+)
+
+crime_neighborhood_rank <- site_data$crime_neighborhoods |>
+  sf::st_drop_geometry() |>
+  dplyr::arrange(dplyr::desc(crime_count), neighborhood) |>
+  dplyr::slice_head(n = 10) |>
+  dplyr::transmute(
+    Neighborhood = neighborhood,
+    `Crime incidents` = format_number_label(crime_count)
+  )
+
+permit_neighborhood_rank <- site_data$permit_neighborhoods |>
+  sf::st_drop_geometry() |>
+  dplyr::arrange(dplyr::desc(value_sum), neighborhood) |>
+  dplyr::slice_head(n = 10) |>
+  dplyr::transmute(
+    Neighborhood = neighborhood,
+    `Declared permit value` = format_currency_label(value_sum),
+    Permits = format_number_label(permit_count)
+  )
+```
+
+:::::::::::::::::::::::::::::::::::::::: page-shell
+:::::::::::: masthead
+::: section-kicker
+Buffalo open data
+:::
+
+# Crime incidents and permits, refreshed daily.
+
+::: masthead-copy
+A simple 30-day snapshot of public safety activity and permit issuance across Buffalo, combining live incident points, permit points, and neighborhood-level context in one place.
+:::
+
+::::::::: meta-row
+::::: meta-item
+::: meta-term
+Window
+:::
+
+::: meta-detail
+`r window_label`
+:::
+:::::
+
+::::: meta-item
+::: meta-term
+Updated
+:::
+
+::: meta-detail
+`r generated_label`
+:::
+:::::
+:::::::::
+::::::::::::
+
+::::: section-block
+:::: section-heading
+::: section-kicker
+Summary
+:::
+
+## Key signals from the current 30-day window
+::::
+
+```{r}
+build_kpi_cards(site_data$kpis)
+```
+:::::
+
+:::::: section-block
+:::: section-heading
+::: section-kicker
+Main map
+:::
+
+## Incidents, permits, and demolition activity in one view
+
+Crime incidents are shown first so the map stays readable at city scale. Turn on permit, demolition, or neighborhood layers from the control when you want to compare them.
+::::
+
+::: main-map-frame
+```{r}
+make_main_map(site_data)
+```
+:::
+::::::
+
+:::::: section-block
+:::: section-heading
+::: section-kicker
+Neighborhoods
+:::
+
+## Where recent crime counts are concentrated
+
+This supporting map keeps the neighborhood view simple and focused instead of splitting attention across multiple smaller maps.
+::::
+
+::: support-map-frame
+```{r}
+make_summary_map(
+  site_data$crime_neighborhoods,
+  value_col = "crime_count",
+  title = "30-day crime count",
+  palette = site_config$palette$crime_fill,
+  value_format = format_number_label
+)
+```
+:::
+::::::
+
+:::::::::::: section-block
+:::: section-heading
+::: section-kicker
+Rankings
+:::
+
+## Neighborhoods and categories worth a closer look
+::::
+
+::::::::: table-stack
+::: table-card
+### Neighborhoods with the most crime incidents
+
+```{r}
+knitr::kable(crime_neighborhood_rank, align = c("l", "r"))
+```
+:::
+
+::: table-card
+### Neighborhoods with the highest declared permit value
+
+```{r}
+knitr::kable(permit_neighborhood_rank, align = c("l", "r", "r"))
+```
+:::
+
+:::::: table-card
+### Most common crime and permit categories
+
+::::: table-pair
+::: mini-table
+#### Crime categories
+
+```{r}
+knitr::kable(
+  site_data$top_crime_types |>
+    dplyr::mutate(n = format_number_label(n)),
+  col.names = c("Category", "Incidents"),
+  align = c("l", "r")
+)
+```
+:::
+
+::: mini-table
+#### Permit types
+
+```{r}
+knitr::kable(
+  site_data$top_permit_types |>
+    dplyr::mutate(n = format_number_label(n)),
+  col.names = c("Type", "Permits"),
+  align = c("l", "r")
+)
+```
+:::
+:::::
+::::::
+:::::::::
+::::::::::::
+
+:::::::: {.section-block .notes-block}
+:::: section-heading
+::: section-kicker
+Method
+:::
+
+## Notes and sources
+::::
+
+::::: notes-grid
+::: note-card
+### Sources
+
+Data is pulled from Buffalo Open Data during daily render:
+
+-   Crime Incidents: <https://data.buffalony.gov/d/d6g9-xbgu>
+-   Permits: <https://data.buffalony.gov/d/9p2d-f3yt>
+-   Neighborhoods: <https://data.buffalony.gov/d/ekfg-mtu8>
+:::
+
+::: note-card
+### Caveats
+
+The reporting window is calculated in `America/New_York` and includes today plus the previous 29 days. Crime data is preliminary, and both tables depend on upstream schema stability from Buffalo Open Data.
+:::
+:::::
+::::::::
+::::::::::::::::::::::::::::::::::::::::

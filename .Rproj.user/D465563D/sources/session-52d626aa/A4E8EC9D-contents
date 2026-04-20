@@ -1,0 +1,23 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Buffalo Crime + Permits Tracker"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Tracker
+  page-footer:
+    left: "Built with Quarto, R, and Buffalo Open Data."
+    right: "Updated daily via GitHub Actions."
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: false
+    page-layout: full
+    code-fold: false
+
+editor: visual
