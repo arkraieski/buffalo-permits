@@ -5,7 +5,7 @@ project:
 website:
   title: "Buffalo Crime + Permits Tracker"
   page-footer:
-    left: "Built with Quarto, R, and Buffalo Open Data."
+    left: "Built with Quarto, R, and Buffalo Open Data by [Alex Kraieski](https://kraieski.dev/)."
     right: "Updated daily via GitHub Actions."
 
 format:

@@ -172,7 +172,11 @@ Updated
 :::::::
 
 ::::::: masthead-visual
-![](assets/buffalo-public-domain-photos/aerial-downtown-buffalo-2018.jpg){.masthead-image fig-alt="Aerial view of downtown Buffalo, New York"}
+<img
+  src="assets/buffalo-public-domain-photos/aerial-downtown-buffalo-2018.jpg"
+  alt="Aerial view of downtown Buffalo, New York"
+  class="masthead-image"
+/>
 :::::::
 ::::::::::::
 
@@ -313,4 +317,22 @@ The reporting window is calculated in `America/New_York` and includes today plus
 :::
 :::::
 ::::::::
+
+::::::: {.bottom-photo-composition}
+::: {.bottom-photo-primary}
+<img
+  src="assets/buffalo-public-domain-photos/aerial-buffalo-central-terminal-2018.jpg"
+  alt="Aerial view of Buffalo, New York, with a focus on the historic Buffalo Central Terminal"
+  class="bottom-photo-image bottom-photo-image-primary"
+/>
+:::
+
+::: {.bottom-photo-archive}
+<img
+  src="assets/buffalo-public-domain-photos/grain-boats-and-grain-elevators-erie-canal-1943.jpg"
+  alt="Grain boats and grain elevators on the Erie Canal in Buffalo"
+  class="bottom-photo-image bottom-photo-image-archive bottom-photo-image-archive-top"
+/>
+:::
+:::::::
 ::::::::::::::::::::::::::::::::::::::::
