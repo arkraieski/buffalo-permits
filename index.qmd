@@ -15,11 +15,13 @@ library(ggplot2)
 library(knitr)
 library(scales)
 library(sf)
+library(tibble)
 
 source("R/utils.R")
 source("R/data_fetch.R")
 source("R/data_prep.R")
 source("R/maps.R")
+source("R/charts.R")
 
 site_data <- build_site_data()
 window <- site_data$window
@@ -52,95 +54,7 @@ permit_neighborhood_rank <- site_data$permit_neighborhoods |>
     Permits = format_number_label(permit_count)
   )
 
-crime_daily_counts <- site_data$crime_sf |>
-  st_drop_geometry() |>
-  count(event_date, name = "total") |>
-  right_join(
-    tibble::tibble(event_date = seq(window$start_date, window$end_date, by = "day")),
-    by = "event_date"
-  ) |>
-  mutate(total = coalesce(total, 0L)) |>
-  arrange(event_date)
-
-permit_daily_counts <- site_data$permit_sf |>
-  st_drop_geometry() |>
-  count(event_date, name = "total") |>
-  right_join(
-    tibble::tibble(event_date = seq(window$start_date, window$end_date, by = "day")),
-    by = "event_date"
-  ) |>
-  mutate(total = coalesce(total, 0L)) |>
-  arrange(event_date)
-
-axis_breaks <- seq(window$start_date, window$end_date, by = "5 days")
-
-crime_daily_chart <- ggplot(crime_daily_counts, aes(x = event_date, y = total)) +
-  geom_col(width = 0.82, fill = "#c44558") +
-  scale_x_date(
-    breaks = axis_breaks,
-    labels = label_date(format = "%b\n%d"),
-    expand = expansion(mult = c(0.01, 0.01))
-  ) +
-  scale_y_continuous(
-    labels = label_number(accuracy = 1),
-    expand = expansion(mult = c(0, 0.06))
-  ) +
-  labs(x = "Date", y = "Crime incidents") +
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "transparent", color = NA),
-    panel.background = element_rect(fill = "transparent", color = NA),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(color = "#dde4ec", linewidth = 0.5),
-    axis.line.x = element_line(color = "#b9c4d0", linewidth = 0.5),
-    axis.title.x = element_text(size = 10, color = "#44515f", margin = margin(t = 10)),
-    axis.text.x = element_text(
-      angle = 0,
-      hjust = 0.5,
-      vjust = 0.5,
-      size = 8.5,
-      color = "#44515f"
-    ),
-    axis.text.y = element_text(size = 9, color = "#44515f"),
-    axis.title.y = element_text(size = 10, color = "#44515f", margin = margin(r = 10)),
-    plot.margin = margin(12, 12, 26, 8)
-  ) +
-  coord_cartesian(clip = "off")
-
-permit_daily_chart <- ggplot(permit_daily_counts, aes(x = event_date, y = total)) +
-  geom_col(width = 0.82, fill = "#117a72") +
-  scale_x_date(
-    breaks = axis_breaks,
-    labels = label_date(format = "%b\n%d"),
-    expand = expansion(mult = c(0.01, 0.01))
-  ) +
-  scale_y_continuous(
-    labels = label_number(accuracy = 1),
-    expand = expansion(mult = c(0, 0.06))
-  ) +
-  labs(x = "Date", y = "Permits issued") +
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "transparent", color = NA),
-    panel.background = element_rect(fill = "transparent", color = NA),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(color = "#dde4ec", linewidth = 0.5),
-    axis.line.x = element_line(color = "#b9c4d0", linewidth = 0.5),
-    axis.title.x = element_text(size = 10, color = "#44515f", margin = margin(t = 10)),
-    axis.text.x = element_text(
-      angle = 0,
-      hjust = 0.5,
-      vjust = 0.5,
-      size = 8.5,
-      color = "#44515f"
-    ),
-    axis.text.y = element_text(size = 9, color = "#44515f"),
-    axis.title.y = element_text(size = 10, color = "#44515f", margin = margin(r = 10)),
-    plot.margin = margin(12, 12, 26, 8)
-  ) +
-  coord_cartesian(clip = "off")
+daily_chart_bundle <- build_daily_chart_bundle(site_data, window_label)
 ```
 
 ::::::::::::::::::::::::::::::::::::::::: page-shell
@@ -225,7 +139,9 @@ make_summary_map(
 #| fig-width: 7
 #| fig-height: 4.8
 #| out-width: "100%"
-crime_daily_chart
+#| dev: ragg_png
+#| fig-alt: !expr daily_chart_bundle$crime$alt_text
+daily_chart_bundle$crime$plot
 ```
 :::
 
@@ -236,7 +152,9 @@ crime_daily_chart
 #| fig-width: 7
 #| fig-height: 4.8
 #| out-width: "100%"
-permit_daily_chart
+#| dev: ragg_png
+#| fig-alt: !expr daily_chart_bundle$permits$alt_text
+daily_chart_bundle$permits$plot
 ```
 :::
 :::::::::
