@@ -180,10 +180,6 @@ build_site_body <- function(render_context, chart_assets) {
               class = "masthead-copy",
               htmltools::tags$p(class = "eyebrow", "Buffalo, New York"),
               htmltools::tags$h1("Permits and crime incidents, refreshed daily."),
-              htmltools::tags$p(
-                class = "masthead-dek",
-                "A daily Buffalo dashboard tracking recent permits, crime incidents, and demolition activity."
-              ),
               htmltools::tags$div(
                 class = "meta-row",
                 htmltools::tags$div(
