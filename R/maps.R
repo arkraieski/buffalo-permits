@@ -157,7 +157,7 @@ make_leaflet_responsive <- function(map) {
   )
 }
 
-add_main_map_legends <- function(map, crime_palette, crime_values, permit_palette, permit_values, demolition_palette, demolition_values, crime_yoy_palette, crime_yoy_values) {
+add_main_map_legends <- function(map, crime_palette, crime_values, permit_palette, permit_values, demolition_palette, demolition_values, crime_yoy_palette, crime_yoy_values, permit_yoy_palette, permit_yoy_values) {
   map |>
     add_descending_numeric_legend(
       palette = crime_palette,
@@ -174,12 +174,18 @@ add_main_map_legends <- function(map, crime_palette, crime_values, permit_palett
     add_descending_numeric_legend(
       palette = crime_yoy_palette,
       values = crime_yoy_values,
-      title = "Crime YoY count change",
+      title = "Crime YoY % change",
       class_name = "info legend legend-crime-yoy",
       symmetric = TRUE,
-      formatter = function(x) {
-        sprintf("%s%s", if (x > 0) "+" else "", format_number_label(x))
-      }
+      formatter = function(x) scales::percent(x, accuracy = 1)
+    ) |>
+    add_descending_numeric_legend(
+      palette = permit_yoy_palette,
+      values = permit_yoy_values,
+      title = "Permit YoY % change",
+      class_name = "info legend legend-permit-yoy",
+      symmetric = TRUE,
+      formatter = function(x) scales::percent(x, accuracy = 1)
     )
 }
 
@@ -192,6 +198,7 @@ add_main_map_legend_behavior <- function(map) {
         'Neighborhood crime counts',
         'Neighborhood crime YoY change',
         'Neighborhood permit counts',
+        'Neighborhood permit YoY change',
         'Neighborhood demolition permits'
       ];
 
@@ -206,6 +213,7 @@ add_main_map_legend_behavior <- function(map) {
           'Neighborhood crime counts': el.querySelector('.legend-crime'),
           'Neighborhood crime YoY change': el.querySelector('.legend-crime-yoy'),
           'Neighborhood permit counts': el.querySelector('.legend-permits'),
+          'Neighborhood permit YoY change': el.querySelector('.legend-permit-yoy'),
           'Neighborhood demolition permits': el.querySelector('.legend-demolition')
         };
       }
@@ -352,8 +360,9 @@ make_main_map <- function(site_data) {
   )
 
   crime_values <- summary_sf$crime_count
-  crime_yoy_values <- summary_sf$crime_yoy_count_change
+  crime_yoy_values <- summary_sf$crime_yoy_pct_change
   permit_values <- summary_sf$permit_count
+  permit_yoy_values <- summary_sf$permit_yoy_pct_change
   demolition_values <- summary_sf$demolition_count
   has_demolition_data <- any(demolition_values > 0, na.rm = TRUE)
 
@@ -380,6 +389,17 @@ make_main_map <- function(site_data) {
     na.color = "#d8dbe6"
   )
 
+  permit_yoy_limit <- max(abs(permit_yoy_values), na.rm = TRUE)
+  if (!is.finite(permit_yoy_limit) || permit_yoy_limit == 0) {
+    permit_yoy_limit <- 1
+  }
+
+  permit_yoy_palette <- leaflet::colorNumeric(
+    palette = c("#7b8794", "#f7f7f7", "#117a72"),
+    domain = c(-permit_yoy_limit, permit_yoy_limit),
+    na.color = "#d8dbe6"
+  )
+
   demolition_palette <- leaflet::colorNumeric(
     palette = site_config$palette$demolition_fill,
     domain = demolition_values,
@@ -391,7 +411,8 @@ make_main_map <- function(site_data) {
     "Permits",
     "Neighborhood crime counts",
     "Neighborhood crime YoY change",
-    "Neighborhood permit counts"
+    "Neighborhood permit counts",
+    "Neighborhood permit YoY change"
   )
 
   map <- leaflet::leaflet(
@@ -432,7 +453,7 @@ make_main_map <- function(site_data) {
       weight = 1,
       opacity = 1,
       fillOpacity = 0.72,
-      fillColor = ~crime_yoy_palette(crime_yoy_count_change),
+      fillColor = ~crime_yoy_palette(crime_yoy_pct_change),
       popup = vapply(seq_len(nrow(summary_sf)), function(i) {
         rows <- tibble::tibble(
           label = c("Neighborhood", "Current crime count", "Prior-year crime count", "YoY count change", "YoY percent change"),
@@ -457,10 +478,56 @@ make_main_map <- function(site_data) {
       }, character(1)),
       label = lapply(
         sprintf(
-          "%s: %s%s vs last year",
+          "%s: %s",
           summary_sf$neighborhood,
-          ifelse(summary_sf$crime_yoy_count_change > 0, "+", ""),
-          format_number_label(summary_sf$crime_yoy_count_change)
+          dplyr::if_else(
+            is.na(summary_sf$crime_yoy_pct_change),
+            "No prior-year baseline",
+            scales::percent(summary_sf$crime_yoy_pct_change, accuracy = 0.1)
+          )
+        ),
+        htmltools::HTML
+      )
+    ) |>
+    leaflet::addPolygons(
+      data = summary_sf,
+      group = "Neighborhood permit YoY change",
+      color = "#ffffff",
+      weight = 1,
+      opacity = 1,
+      fillOpacity = 0.72,
+      fillColor = ~permit_yoy_palette(permit_yoy_pct_change),
+      popup = vapply(seq_len(nrow(summary_sf)), function(i) {
+        rows <- tibble::tibble(
+          label = c("Neighborhood", "Current permit count", "Prior-year permit count", "YoY count change", "YoY percent change"),
+          value = c(
+            summary_sf$neighborhood[[i]],
+            format_number_label(summary_sf$permit_count[[i]]),
+            format_number_label(summary_sf$prior_permit_count[[i]]),
+            sprintf(
+              "%s%s",
+              if (summary_sf$permit_yoy_count_change[[i]] > 0) "+" else "",
+              format_number_label(summary_sf$permit_yoy_count_change[[i]])
+            ),
+            if (is.na(summary_sf$permit_yoy_pct_change[[i]])) {
+              "No prior-year baseline"
+            } else {
+              scales::percent(summary_sf$permit_yoy_pct_change[[i]], accuracy = 0.1)
+            }
+          )
+        )
+
+        build_popup_table(rows)
+      }, character(1)),
+      label = lapply(
+        sprintf(
+          "%s: %s",
+          summary_sf$neighborhood,
+          dplyr::if_else(
+            is.na(summary_sf$permit_yoy_pct_change),
+            "No prior-year baseline",
+            scales::percent(summary_sf$permit_yoy_pct_change, accuracy = 0.1)
+          )
         ),
         htmltools::HTML
       )
@@ -508,15 +575,18 @@ make_main_map <- function(site_data) {
       demolition_palette = demolition_palette,
       demolition_values = demolition_values,
       crime_yoy_palette = crime_yoy_palette,
-      crime_yoy_values = crime_yoy_values
+      crime_yoy_values = crime_yoy_values,
+      permit_yoy_palette = permit_yoy_palette,
+      permit_yoy_values = permit_yoy_values
     ) |>
     leaflet::hideGroup("Permits") |>
     leaflet::hideGroup("Neighborhood crime counts") |>
     leaflet::hideGroup("Neighborhood crime YoY change") |>
-    leaflet::hideGroup("Neighborhood permit counts")
+    leaflet::hideGroup("Neighborhood permit counts") |>
+    leaflet::hideGroup("Neighborhood permit YoY change")
 
   if (has_demolition_data) {
-    overlay_groups <- c(overlay_groups[1:2], "Demolition permits", overlay_groups[3:5], "Neighborhood demolition permits")
+    overlay_groups <- c(overlay_groups[1:2], "Demolition permits", overlay_groups[3:6], "Neighborhood demolition permits")
 
     map <- leaflet::clearControls(map) |>
       leaflet::addPolygons(
@@ -558,13 +628,16 @@ make_main_map <- function(site_data) {
         demolition_palette = demolition_palette,
         demolition_values = demolition_values,
         crime_yoy_palette = crime_yoy_palette,
-        crime_yoy_values = crime_yoy_values
+        crime_yoy_values = crime_yoy_values,
+        permit_yoy_palette = permit_yoy_palette,
+        permit_yoy_values = permit_yoy_values
       ) |>
       leaflet::hideGroup("Permits") |>
       leaflet::hideGroup("Demolition permits") |>
       leaflet::hideGroup("Neighborhood crime counts") |>
       leaflet::hideGroup("Neighborhood crime YoY change") |>
       leaflet::hideGroup("Neighborhood permit counts") |>
+      leaflet::hideGroup("Neighborhood permit YoY change") |>
       leaflet::hideGroup("Neighborhood demolition permits")
   }
 

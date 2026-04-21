@@ -320,15 +320,34 @@ build_site_data <- function() {
         dplyr::select(neighborhood_key, prior_crime_count),
       by = "neighborhood_key"
     ) |>
+    dplyr::left_join(
+      summarize_neighborhood_counts(
+        neighborhoods,
+        prior_permit_sf,
+        count_name = "prior_permit_count",
+        value_name = "value"
+      ) |>
+        sf::st_drop_geometry() |>
+        dplyr::select(neighborhood_key, prior_permit_count, prior_value_sum = value_sum),
+      by = "neighborhood_key"
+    ) |>
     dplyr::mutate(
       permit_count = dplyr::coalesce(permit_count, 0L),
       value_sum = dplyr::coalesce(value_sum, 0),
       demolition_count = dplyr::coalesce(demolition_count, 0L),
       prior_crime_count = dplyr::coalesce(prior_crime_count, 0L),
+      prior_permit_count = dplyr::coalesce(prior_permit_count, 0L),
+      prior_value_sum = dplyr::coalesce(prior_value_sum, 0),
       crime_yoy_count_change = crime_count - prior_crime_count,
       crime_yoy_pct_change = dplyr::if_else(
         prior_crime_count > 0,
         (crime_count - prior_crime_count) / prior_crime_count,
+        NA_real_
+      ),
+      permit_yoy_count_change = permit_count - prior_permit_count,
+      permit_yoy_pct_change = dplyr::if_else(
+        prior_permit_count > 0,
+        (permit_count - prior_permit_count) / prior_permit_count,
         NA_real_
       )
     )
