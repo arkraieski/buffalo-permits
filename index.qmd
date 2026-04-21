@@ -231,7 +231,7 @@ Data is pulled from Buffalo Open Data during daily render:
 ::: note-card
 ### Caveats
 
-The reporting window is calculated in `America/New_York` and includes today plus the previous 29 days. Crime data is preliminary, and both tables depend on upstream schema stability from Buffalo Open Data.
+The reporting window is calculated in `America/New_York` and includes today plus the previous 29 days. Crime data is preliminary.
 :::
 :::::
 ::::::::
