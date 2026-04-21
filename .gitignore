@@ -1,5 +1,6 @@
 /.quarto/
 /_site/
+node_modules/
 **/*.quarto_ipynb
 *.Rproj
 .Rproj.user/

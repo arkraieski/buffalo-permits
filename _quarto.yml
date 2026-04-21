@@ -3,7 +3,14 @@ project:
   output-dir: _site
 
 website:
-  title: ""
+  title: "Buffalo Permits + Crime Tracker"
+  description: "A daily-updated Buffalo dashboard tracking recent crime incidents, permits, and demolition activity."
+  site-url: "https://arkraieski.github.io/buffalo-permits/"
+  image: opengraph.png
+  image-alt: "Open Graph preview for the Buffalo Permits and Crime Tracker showing the latest reporting window and key metrics."
+  open-graph: true
+  twitter-card:
+    card-style: summary_large_image
   page-footer:
     left: "Built with Quarto, R, and Buffalo Open Data by [Alex Kraieski](https://kraieski.dev/)."
     right: "Updated daily via GitHub Actions."

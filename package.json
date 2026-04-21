@@ -1,0 +1,10 @@
+{
+  "name": "buffalo-permits-and-crime-tracker",
+  "private": true,
+  "scripts": {
+    "generate:og": "node scripts/generate-og-image.mjs"
+  },
+  "dependencies": {
+    "puppeteer": "^24.8.2"
+  }
+}
