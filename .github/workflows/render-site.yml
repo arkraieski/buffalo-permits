@@ -2,6 +2,7 @@ name: Build and Deploy Site
 
 on:
   workflow_dispatch:
+  push:
   schedule:
     - cron: "17 10 * * *"
 
@@ -51,7 +52,7 @@ jobs:
       - name: Build site
         env:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
-        run: Rscript scripts/render_site.R
+        run: Rscript scripts/build_site.R
 
       - name: Generate social preview image
         run: npm run generate:og

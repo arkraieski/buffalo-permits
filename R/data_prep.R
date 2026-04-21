@@ -169,7 +169,12 @@ summarize_neighborhood_counts <- function(neighborhoods, points_sf, count_name, 
   result
 }
 
-compute_kpis <- function(crime_sf, permit_sf) {
+compute_kpis <- function(crime_sf, permit_sf, prior_crime_sf, prior_permit_sf) {
+  current_permit_value <- safe_sum(permit_sf$value)
+  prior_permit_value <- safe_sum(prior_permit_sf$value)
+  current_avg_permits <- nrow(permit_sf) / site_config$window_days
+  prior_avg_permits <- nrow(prior_permit_sf) / site_config$window_days
+
   tibble::tibble(
     label = c(
       "Crime incidents",
@@ -180,23 +185,54 @@ compute_kpis <- function(crime_sf, permit_sf) {
     value = c(
       format_number_label(nrow(crime_sf)),
       format_number_label(nrow(permit_sf)),
-      format_currency_label(safe_sum(permit_sf$value)),
-      format_number_label(round(nrow(permit_sf) / site_config$window_days, 1))
+      format_currency_label(current_permit_value),
+      format_number_label(round(current_avg_permits, 1))
     ),
     note = c(
-      "Reported incidents in the rolling 30-day window.",
-      "Issued permits in the same reporting window.",
-      "Total declared value of work across 30-day permits.",
-      sprintf("Based on a %s-day rolling window.", site_config$window_days)
+      "",
+      "",
+      "",
+      ""
+    ),
+    delta = c(
+      format_yoy_change_label(nrow(crime_sf), nrow(prior_crime_sf)),
+      format_yoy_change_label(nrow(permit_sf), nrow(prior_permit_sf)),
+      format_yoy_change_label(current_permit_value, prior_permit_value),
+      format_yoy_change_label(current_avg_permits, prior_avg_permits)
+    ),
+    delta_class = c(
+      dplyr::case_when(
+        nrow(crime_sf) > nrow(prior_crime_sf) ~ "up",
+        nrow(crime_sf) < nrow(prior_crime_sf) ~ "down",
+        TRUE ~ "flat"
+      ),
+      dplyr::case_when(
+        nrow(permit_sf) > nrow(prior_permit_sf) ~ "up",
+        nrow(permit_sf) < nrow(prior_permit_sf) ~ "down",
+        TRUE ~ "flat"
+      ),
+      dplyr::case_when(
+        current_permit_value > prior_permit_value ~ "up",
+        current_permit_value < prior_permit_value ~ "down",
+        TRUE ~ "flat"
+      ),
+      dplyr::case_when(
+        current_avg_permits > prior_avg_permits ~ "up",
+        current_avg_permits < prior_avg_permits ~ "down",
+        TRUE ~ "flat"
+      )
     )
   )
 }
 
 build_site_data <- function() {
   window <- build_reporting_window()
+  prior_year_window <- shift_reporting_window_years(window, years = -1L)
   neighborhoods <- prepare_neighborhoods(fetch_neighborhood_boundaries())
   crime_raw <- fetch_crime_raw(window)
   permits_raw <- fetch_permits_raw(window)
+  prior_crime_raw <- fetch_crime_raw(prior_year_window)
+  prior_permits_raw <- fetch_permits_raw(prior_year_window)
 
   validate_required_columns(
     crime_raw,
@@ -216,8 +252,28 @@ build_site_data <- function() {
     "Permits dataset"
   )
 
+  validate_required_columns(
+    prior_crime_raw,
+    c(
+      "case_number", "incident_datetime", "incident_id", "incident_type_primary",
+      "incident_description", "address_1", "latitude", "longitude", "neighborhood"
+    ),
+    "Prior-year crime dataset"
+  )
+
+  validate_required_columns(
+    prior_permits_raw,
+    c(
+      "apno", "aptype", "issued", "stname", "fees", "value",
+      "descofwork", "latitude", "longitude", "neighborhood"
+    ),
+    "Prior-year permits dataset"
+  )
+
   crime_sf <- prepare_crime_data(crime_raw, neighborhoods)
   permit_sf <- prepare_permit_data(permits_raw, neighborhoods)
+  prior_crime_sf <- prepare_crime_data(prior_crime_raw, neighborhoods)
+  prior_permit_sf <- prepare_permit_data(prior_permits_raw, neighborhoods)
 
   crime_neighborhoods <- summarize_neighborhood_counts(
     neighborhoods,
@@ -254,10 +310,27 @@ build_site_data <- function() {
         dplyr::select(neighborhood_key, demolition_count),
       by = "neighborhood_key"
     ) |>
+    dplyr::left_join(
+      summarize_neighborhood_counts(
+        neighborhoods,
+        prior_crime_sf,
+        count_name = "prior_crime_count"
+      ) |>
+        sf::st_drop_geometry() |>
+        dplyr::select(neighborhood_key, prior_crime_count),
+      by = "neighborhood_key"
+    ) |>
     dplyr::mutate(
       permit_count = dplyr::coalesce(permit_count, 0L),
       value_sum = dplyr::coalesce(value_sum, 0),
-      demolition_count = dplyr::coalesce(demolition_count, 0L)
+      demolition_count = dplyr::coalesce(demolition_count, 0L),
+      prior_crime_count = dplyr::coalesce(prior_crime_count, 0L),
+      crime_yoy_count_change = crime_count - prior_crime_count,
+      crime_yoy_pct_change = dplyr::if_else(
+        prior_crime_count > 0,
+        (crime_count - prior_crime_count) / prior_crime_count,
+        NA_real_
+      )
     )
 
   top_crime_types <- crime_sf |>
@@ -272,15 +345,18 @@ build_site_data <- function() {
 
   list(
     window = window,
+    prior_year_window = prior_year_window,
     neighborhoods = neighborhoods,
     crime_sf = crime_sf,
     permit_sf = permit_sf,
+    prior_crime_sf = prior_crime_sf,
+    prior_permit_sf = prior_permit_sf,
     demolition_permit_sf = demolition_permit_sf,
     neighborhood_summary = neighborhood_summary,
     crime_neighborhoods = crime_neighborhoods,
     permit_neighborhoods = permit_neighborhoods,
     demolition_neighborhoods = demolition_neighborhoods,
-    kpis = compute_kpis(crime_sf, permit_sf),
+    kpis = compute_kpis(crime_sf, permit_sf, prior_crime_sf, prior_permit_sf),
     top_crime_types = top_crime_types,
     top_permit_types = top_permit_types
   )

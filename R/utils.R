@@ -68,6 +68,29 @@ build_reporting_window <- function(reference_time = ny_now(), days = site_config
   )
 }
 
+shift_reporting_window_years <- function(window, years = -1L) {
+  shifted_start_date <- lubridate::`%m+%`(window$start_date, lubridate::years(years))
+  shifted_end_date <- lubridate::`%m+%`(window$end_date, lubridate::years(years))
+  shifted_generated_at <- lubridate::`%m+%`(
+    lubridate::with_tz(window$generated_at, tzone = site_config$timezone),
+    lubridate::years(years)
+  )
+
+  list(
+    generated_at = shifted_generated_at,
+    start_date = shifted_start_date,
+    end_date = shifted_end_date,
+    start_datetime = as.POSIXct(
+      paste(shifted_start_date, "00:00:00"),
+      tz = site_config$timezone
+    ),
+    end_datetime_exclusive = as.POSIXct(
+      paste(shifted_end_date + 1L, "00:00:00"),
+      tz = site_config$timezone
+    )
+  )
+}
+
 format_date_label <- function(x) {
   format(as.Date(x), "%b %d, %Y")
 }
@@ -118,6 +141,31 @@ safe_mean <- function(x) {
   mean(values)
 }
 
+compute_yoy_ratio <- function(current, previous) {
+  if (is.na(previous) || previous == 0) {
+    return(NA_real_)
+  }
+
+  (current - previous) / previous
+}
+
+format_yoy_change_label <- function(current, previous) {
+  if (is.na(previous) || previous == 0) {
+    if (current == 0) {
+      return("0.0% YoY")
+    }
+
+    return("No YoY")
+  }
+
+  delta_ratio <- compute_yoy_ratio(current, previous)
+  sprintf(
+    "%s%s YoY",
+    if (delta_ratio > 0) "+" else if (delta_ratio < 0) "-" else "",
+    scales::percent(abs(delta_ratio), accuracy = 0.1)
+  )
+}
+
 build_kpi_cards <- function(kpis) {
   htmltools::tags$div(
     class = "kpi-grid",
@@ -126,8 +174,22 @@ build_kpi_cards <- function(kpis) {
       htmltools::tags$article(
         class = "kpi-card",
         htmltools::tags$div(class = "kpi-label", row$label),
-        htmltools::tags$div(class = "kpi-value", row$value),
-        htmltools::tags$p(class = "kpi-note", row$note)
+        htmltools::tags$div(
+          class = "kpi-value-row",
+          htmltools::tags$div(class = "kpi-value", row$value),
+          if ("delta" %in% names(row) && nzchar(row$delta[[1]])) {
+            htmltools::tags$span(
+              class = paste("kpi-delta", row$delta_class[[1]] %||% "flat"),
+              row$delta[[1]]
+            )
+          }
+        ),
+        if ("note" %in% names(row) && nzchar(row$note[[1]])) {
+          htmltools::tags$p(
+            class = "kpi-note",
+            row$note[[1]]
+          )
+        }
       )
     })
   )
