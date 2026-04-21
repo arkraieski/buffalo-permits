@@ -1,4 +1,14 @@
 site_config <- list(
+  site = list(
+    title = "Buffalo Permits + Crime Tracker",
+    description = "A daily-updated Buffalo dashboard tracking recent crime incidents, permits, and demolition activity.",
+    site_url = "https://arkraieski.github.io/buffalo-permits/",
+    image = "opengraph.png",
+    image_alt = "Open Graph preview for the Buffalo Permits and Crime Tracker showing the latest reporting window and key metrics.",
+    hero_image = "assets/buffalo-public-domain-photos/aerial-downtown-buffalo-2018.jpg",
+    bottom_primary_image = "assets/buffalo-public-domain-photos/aerial-buffalo-central-terminal-2018.jpg",
+    bottom_archive_image = "assets/buffalo-public-domain-photos/grain-boats-and-grain-elevators-erie-canal-1943.jpg"
+  ),
   timezone = "America/New_York",
   window_days = 30L,
   datasets = list(
@@ -12,7 +22,8 @@ site_config <- list(
   map = list(
     center = c(lng = -78.8784, lat = 42.8864),
     zoom = 12,
-    min_zoom = 10
+    min_zoom = 10,
+    max_zoom = 18
   ),
   palette = list(
     crime_points = "#d1495b",

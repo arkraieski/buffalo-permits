@@ -1,11 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 import puppeteer from "puppeteer";
 
 const rootDir = process.cwd();
 const siteDir = path.resolve(rootDir, process.argv[2] ?? "_site");
-const sourcePagePath = path.join(siteDir, "index.html");
+const snapshotPath = path.join(siteDir, "og-snapshot.json");
 const outputPath = path.join(siteDir, "opengraph.png");
 
 function textOrEmpty(value) {
@@ -28,62 +27,9 @@ async function fileToDataUrl(filePath) {
   return `data:${mimeType};base64,${bytes.toString("base64")}`;
 }
 
-async function readSiteSnapshot(browser) {
-  const page = await browser.newPage();
-  await page.setRequestInterception(true);
-  page.on("request", (request) => {
-    const url = request.url();
-    if (
-      url.startsWith("file:") ||
-      url.startsWith("data:") ||
-      url === "about:blank"
-    ) {
-      request.continue().catch(() => {});
-      return;
-    }
-
-    request.abort().catch(() => {});
-  });
-
-  await page.goto(pathToFileURL(sourcePagePath).href, {
-    waitUntil: "domcontentloaded"
-  });
-
-  const snapshot = await page.evaluate(() => {
-    const getText = (selector) =>
-      document.querySelector(selector)?.textContent?.trim() ?? "";
-
-    const metaItems = [...document.querySelectorAll(".meta-item")].map((node) => ({
-      term: node.querySelector(".meta-term")?.textContent?.trim() ?? "",
-      detail: node.querySelector(".meta-detail")?.textContent?.trim() ?? ""
-    }));
-
-    const kpis = [...document.querySelectorAll(".kpi-card")]
-      .slice(0, 3)
-      .map((node) => ({
-        label: node.querySelector(".kpi-label")?.textContent?.trim() ?? "",
-        value: node.querySelector(".kpi-value")?.textContent?.trim() ?? ""
-      }));
-
-    return {
-      title: getText(".masthead-copy h1") || document.title || "Buffalo Permits + Crime Tracker",
-      pageTitle: getText("header .title") || document.title || "Buffalo Permits + Crime Tracker",
-      description:
-        getText(".masthead-copy p") ||
-        "Daily Buffalo dashboard covering permits, crime incidents, and demolition activity.",
-      windowLabel:
-        metaItems.find((item) => item.term.toLowerCase() === "window")?.detail ?? "",
-      updatedLabel:
-        metaItems.find((item) => item.term.toLowerCase() === "updated")?.detail ?? "",
-      heroSrc:
-        document.querySelector(".masthead-image")?.getAttribute("src") ??
-        "assets/buffalo-public-domain-photos/aerial-downtown-buffalo-2018.jpg",
-      kpis
-    };
-  });
-
-  await page.close();
-  return snapshot;
+async function readSiteSnapshot() {
+  const snapshotRaw = await fs.readFile(snapshotPath, "utf8");
+  return JSON.parse(snapshotRaw);
 }
 
 function buildMarkup(snapshot) {
@@ -232,13 +178,15 @@ function buildMarkup(snapshot) {
           background: rgba(19, 35, 47, 0.94);
           color: white;
           box-shadow: 0 18px 35px rgba(19, 35, 47, 0.16);
+          min-width: 0;
         }
 
         .metric-value {
-          font-size: 31px;
-          line-height: 1;
+          font-size: 25px;
+          line-height: 1.02;
           font-weight: 800;
           letter-spacing: -0.04em;
+          overflow-wrap: anywhere;
         }
 
         .metric-label {
@@ -246,6 +194,7 @@ function buildMarkup(snapshot) {
           font-size: 15px;
           line-height: 1.25;
           color: rgba(255, 255, 255, 0.72);
+          overflow-wrap: anywhere;
         }
 
         .site-name {
@@ -301,7 +250,6 @@ function buildMarkup(snapshot) {
           </div>
 
           <div class="summary">
-            <div>${escapeHtml(snapshot.description)}</div>
             <div class="meta-row">
               <div class="meta-pill">
                 <div class="meta-label">Window</div>
@@ -334,7 +282,7 @@ async function main() {
   });
 
   try {
-    const snapshot = await readSiteSnapshot(browser);
+    const snapshot = await readSiteSnapshot();
     const heroPath = path.resolve(siteDir, textOrEmpty(snapshot.heroSrc));
     snapshot.heroDataUrl = await fileToDataUrl(heroPath);
     snapshot.description =
