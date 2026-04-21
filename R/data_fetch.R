@@ -38,12 +38,19 @@ fetch_socrata_csv <- function(dataset_id, select, where, order_by = NULL, limit 
 }
 
 fetch_neighborhood_boundaries <- function() {
-  url <- sprintf(
-    "https://data.buffalony.gov/resource/%s.geojson?$select=nbhdname,the_geom",
-    site_config$datasets$neighborhoods
-  )
+  path <- site_config$data_paths$neighborhoods
 
-  sf::read_sf(url, quiet = TRUE) |>
+  if (!file.exists(path)) {
+    stop(
+      sprintf(
+        "Neighborhood boundary file is missing: %s",
+        path
+      ),
+      call. = FALSE
+    )
+  }
+
+  sf::read_sf(path, quiet = TRUE) |>
     sf::st_transform(4326)
 }
 

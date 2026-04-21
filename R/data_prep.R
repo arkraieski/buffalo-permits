@@ -1,9 +1,11 @@
 prepare_neighborhoods <- function(neighborhoods_raw) {
+  sf::st_geometry(neighborhoods_raw) <- sf::st_geometry(neighborhoods_raw)
+
   neighborhoods_raw |>
     dplyr::transmute(
       neighborhood = nbhdname,
       neighborhood_key = normalize_name(nbhdname),
-      geometry = geometry
+      geometry = sf::st_geometry(neighborhoods_raw)
     )
 }
 

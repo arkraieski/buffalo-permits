@@ -6,6 +6,9 @@ site_config <- list(
     permits = "9p2d-f3yt",
     neighborhoods = "ekfg-mtu8"
   ),
+  data_paths = list(
+    neighborhoods = "data/neighborhoods.gpkg"
+  ),
   map = list(
     center = c(lng = -78.8784, lat = 42.8864),
     zoom = 12,

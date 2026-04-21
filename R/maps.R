@@ -110,6 +110,153 @@ make_leaflet_responsive <- function(map) {
   )
 }
 
+add_main_map_legends <- function(map, crime_palette, crime_values, permit_palette, permit_values, demolition_palette, demolition_values) {
+  map |>
+    leaflet::addLegend(
+      position = "bottomright",
+      pal = crime_palette,
+      values = crime_values,
+      title = "Neighborhood crime counts",
+      opacity = 0.85,
+      className = "info legend legend-crime"
+    ) |>
+    leaflet::addLegend(
+      position = "bottomright",
+      pal = permit_palette,
+      values = permit_values,
+      title = "Neighborhood permit counts",
+      opacity = 0.85,
+      className = "info legend legend-permits"
+    )
+}
+
+add_main_map_legend_behavior <- function(map) {
+  htmlwidgets::onRender(
+    map,
+    "function(el, x) {
+      var map = this;
+      var summaryGroups = [
+        'Neighborhood crime counts',
+        'Neighborhood permit counts',
+        'Neighborhood demolition permits'
+      ];
+
+      function refreshSize() {
+        window.setTimeout(function() {
+          map.invalidateSize(true);
+        }, 80);
+      }
+
+      function legendMap() {
+        return {
+          'Neighborhood crime counts': el.querySelector('.legend-crime'),
+          'Neighborhood permit counts': el.querySelector('.legend-permits'),
+          'Neighborhood demolition permits': el.querySelector('.legend-demolition')
+        };
+      }
+
+      function controlInputs() {
+        var labels = el.querySelectorAll('.leaflet-control-layers-overlays label');
+        var inputs = {};
+
+        labels.forEach(function(label) {
+          var input = label.querySelector('input');
+          var span = label.querySelector('span');
+          var text = span ? span.textContent : label.textContent;
+          var cleanText = (text || '').replace(/^\\s+|\\s+$/g, '');
+
+          if (input && cleanText) {
+            inputs[cleanText] = input;
+          }
+        });
+
+        return inputs;
+      }
+
+      function hideAllLegends() {
+        var legends = legendMap();
+        Object.keys(legends).forEach(function(key) {
+          if (legends[key]) {
+            legends[key].style.display = 'none';
+          }
+        });
+      }
+
+      function syncLegends() {
+        hideAllLegends();
+        var activeGroups = map.layerManager.getVisibleGroups();
+        var legends = legendMap();
+
+        activeGroups.forEach(function(groupName) {
+          if (legends[groupName]) {
+            legends[groupName].style.display = 'block';
+          }
+        });
+      }
+
+      function enforceSingleSummary(groupName) {
+        if (summaryGroups.indexOf(groupName) === -1) {
+          return;
+        }
+
+        var inputs = controlInputs();
+
+        summaryGroups.forEach(function(otherGroup) {
+          if (otherGroup === groupName) {
+            return;
+          }
+
+          var layerGroup = map.layerManager.getLayerGroup(otherGroup, false);
+          if (layerGroup && map.hasLayer(layerGroup)) {
+            map.removeLayer(layerGroup);
+          }
+
+          if (inputs[otherGroup]) {
+            inputs[otherGroup].checked = false;
+          }
+        });
+
+        if (inputs[groupName]) {
+          inputs[groupName].checked = true;
+        }
+      }
+
+      function syncSummaryInputs() {
+        var inputs = controlInputs();
+        var activeGroups = map.layerManager.getVisibleGroups();
+
+        summaryGroups.forEach(function(groupName) {
+          if (inputs[groupName]) {
+            inputs[groupName].checked = activeGroups.indexOf(groupName) !== -1;
+          }
+        });
+      }
+
+      refreshSize();
+      syncLegends();
+      syncSummaryInputs();
+
+      window.addEventListener('resize', refreshSize, { passive: true });
+      map.on('overlayadd', function(e) {
+        var groupName = e.name || map.layerManager.getGroupNameFromLayerGroup(e.layer);
+        enforceSingleSummary(groupName);
+        syncLegends();
+        syncSummaryInputs();
+      });
+      map.on('overlayremove', function() {
+        syncLegends();
+        syncSummaryInputs();
+      });
+      map.on('baselayerchange', refreshSize);
+
+      if (window.ResizeObserver) {
+        var target = el.closest('.main-map-frame, .support-map-frame') || el.parentElement || el;
+        new ResizeObserver(refreshSize).observe(target);
+      }
+    }"
+  )
+}
+
 make_main_map <- function(site_data) {
   summary_sf <- site_data$neighborhood_summary
   crime_popups <- neighborhood_popup_html(summary_sf, "crime_count", "Crime incidents")
@@ -152,6 +299,7 @@ make_main_map <- function(site_data) {
   crime_values <- summary_sf$crime_count
   permit_values <- summary_sf$permit_count
   demolition_values <- summary_sf$demolition_count
+  has_demolition_data <- any(demolition_values > 0, na.rm = TRUE)
 
   crime_palette <- leaflet::colorNumeric(
     palette = site_config$palette$crime_fill,
@@ -169,6 +317,13 @@ make_main_map <- function(site_data) {
     palette = site_config$palette$demolition_fill,
     domain = demolition_values,
     na.color = "#d8dbe6"
+  )
+
+  overlay_groups <- c(
+    "Crime incidents",
+    "Permits",
+    "Neighborhood crime counts",
+    "Neighborhood permit counts"
   )
 
   map <- leaflet::leaflet(
@@ -202,17 +357,6 @@ make_main_map <- function(site_data) {
       popup = permit_popups,
       label = permit_labels
     ) |>
-    leaflet::addPolygons(
-      data = summary_sf,
-      group = "Neighborhood demolition permits",
-      color = "#ffffff",
-      weight = 1,
-      opacity = 1,
-      fillOpacity = 0.72,
-      fillColor = ~demolition_palette(demolition_count),
-      popup = demolition_popups,
-      label = demolition_labels
-    ) |>
     leaflet::addCircleMarkers(
       data = site_data$crime_sf,
       group = "Crime incidents",
@@ -243,40 +387,74 @@ make_main_map <- function(site_data) {
         spiderfyOnMaxZoom = TRUE
       )
     ) |>
-    leaflet::addCircleMarkers(
-      data = site_data$demolition_permit_sf,
-      group = "Demolition permits",
-      radius = 6,
-      stroke = TRUE,
-      weight = 1,
-      color = "#4c1d95",
-      fillColor = site_config$palette$demolition_points,
-      fillOpacity = 0.95,
-      popup = demolition_point_popups,
-      clusterOptions = leaflet::markerClusterOptions(
-        showCoverageOnHover = FALSE,
-        spiderfyOnMaxZoom = TRUE
-      )
-    ) |>
     leaflet::addLayersControl(
       baseGroups = c("Light", "Satellite", "Street"),
-      overlayGroups = c(
-        "Crime incidents",
-        "Permits",
-        "Demolition permits",
-        "Neighborhood crime counts",
-        "Neighborhood permit counts",
-        "Neighborhood demolition permits"
-      ),
+      overlayGroups = overlay_groups,
       options = leaflet::layersControlOptions(collapsed = TRUE, position = "topright")
     ) |>
+    add_main_map_legends(
+      crime_palette = crime_palette,
+      crime_values = crime_values,
+      permit_palette = permit_palette,
+      permit_values = permit_values,
+      demolition_palette = demolition_palette,
+      demolition_values = demolition_values
+    ) |>
     leaflet::hideGroup("Permits") |>
-    leaflet::hideGroup("Demolition permits") |>
     leaflet::hideGroup("Neighborhood crime counts") |>
-    leaflet::hideGroup("Neighborhood permit counts") |>
-    leaflet::hideGroup("Neighborhood demolition permits")
+    leaflet::hideGroup("Neighborhood permit counts")
 
-  make_leaflet_responsive(map)
+  if (has_demolition_data) {
+    overlay_groups <- c(overlay_groups[1:2], "Demolition permits", overlay_groups[3:4], "Neighborhood demolition permits")
+
+    map <- leaflet::clearControls(map) |>
+      leaflet::addPolygons(
+        data = summary_sf,
+        group = "Neighborhood demolition permits",
+        color = "#ffffff",
+        weight = 1,
+        opacity = 1,
+        fillOpacity = 0.72,
+        fillColor = ~demolition_palette(demolition_count),
+        popup = demolition_popups,
+        label = demolition_labels
+      ) |>
+      leaflet::addCircleMarkers(
+        data = site_data$demolition_permit_sf,
+        group = "Demolition permits",
+        radius = 6,
+        stroke = TRUE,
+        weight = 1,
+        color = "#4c1d95",
+        fillColor = site_config$palette$demolition_points,
+        fillOpacity = 0.95,
+        popup = demolition_point_popups,
+        clusterOptions = leaflet::markerClusterOptions(
+          showCoverageOnHover = FALSE,
+          spiderfyOnMaxZoom = TRUE
+        )
+      ) |>
+      leaflet::addLayersControl(
+        baseGroups = c("Light", "Satellite", "Street"),
+        overlayGroups = overlay_groups,
+        options = leaflet::layersControlOptions(collapsed = TRUE, position = "topright")
+      ) |>
+      add_main_map_legends(
+        crime_palette = crime_palette,
+        crime_values = crime_values,
+        permit_palette = permit_palette,
+        permit_values = permit_values,
+        demolition_palette = demolition_palette,
+        demolition_values = demolition_values
+      ) |>
+      leaflet::hideGroup("Permits") |>
+      leaflet::hideGroup("Demolition permits") |>
+      leaflet::hideGroup("Neighborhood crime counts") |>
+      leaflet::hideGroup("Neighborhood permit counts") |>
+      leaflet::hideGroup("Neighborhood demolition permits")
+  }
+
+  add_main_map_legend_behavior(map)
 }
 
 make_summary_map <- function(data, value_col, title, palette, value_format = format_number_label) {
