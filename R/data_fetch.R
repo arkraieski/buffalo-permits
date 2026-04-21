@@ -11,6 +11,16 @@ apply_socrata_app_token <- function(req) {
   httr2::req_headers(req, "X-App-Token" = app_token)
 }
 
+apply_socrata_request_policies <- function(req) {
+  req |>
+    httr2::req_timeout(site_config$network$request_timeout_seconds) |>
+    httr2::req_retry(
+      max_tries = site_config$network$max_retries,
+      max_seconds = site_config$network$max_retry_wait_seconds,
+      retry_on_failure = TRUE
+    )
+}
+
 fetch_socrata_csv <- function(dataset_id, select, where, order_by = NULL, limit = 50000) {
   query <- list(
     "$select" = select,
@@ -24,6 +34,7 @@ fetch_socrata_csv <- function(dataset_id, select, where, order_by = NULL, limit 
 
   req <- build_socrata_request(dataset_id, "csv") |>
     apply_socrata_app_token() |>
+    apply_socrata_request_policies() |>
     httr2::req_url_query(!!!query) |>
     httr2::req_user_agent("buffalo-permits-crime-tracker/0.1")
 

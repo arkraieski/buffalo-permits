@@ -47,6 +47,8 @@ jobs:
         run: npm install --no-fund --no-audit
 
       - name: Render site
+        env:
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
         run: quarto render
 
       - name: Generate social preview image

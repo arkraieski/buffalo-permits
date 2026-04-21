@@ -26,6 +26,11 @@ site_config <- list(
     crime = "https://data.buffalony.gov/d/d6g9-xbgu",
     permits = "https://data.buffalony.gov/d/9p2d-f3yt",
     neighborhoods = "https://data.buffalony.gov/d/ekfg-mtu8"
+  ),
+  network = list(
+    request_timeout_seconds = 120,
+    max_retries = 3,
+    max_retry_wait_seconds = 45
   )
 )
 
