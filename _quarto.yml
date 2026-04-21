@@ -3,7 +3,7 @@ project:
   output-dir: _site
 
 website:
-  title: "Buffalo Crime + Permits Tracker"
+  title: ""
   page-footer:
     left: "Built with Quarto, R, and Buffalo Open Data by [Alex Kraieski](https://kraieski.dev/)."
     right: "Updated daily via GitHub Actions."
