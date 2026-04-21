@@ -102,6 +102,15 @@ main.content.column-page,
   min-width: 0;
 }
 
+.eyebrow {
+  margin: 0 0 0.55rem;
+  color: var(--permit);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .masthead-visual {
   display: flex;
   align-items: stretch;
@@ -110,9 +119,12 @@ main.content.column-page,
 }
 
 .masthead-visual p,
-.masthead-visual .quarto-figure {
+.masthead-visual .quarto-figure,
+.masthead-picture,
+.bottom-photo-picture {
   margin: 0;
   width: 100%;
+  display: block;
 }
 
 .masthead-image {
@@ -131,6 +143,14 @@ main.content.column-page,
   margin-bottom: 0.95rem;
   font-size: clamp(2.2rem, 4.5vw, 3.8rem);
   line-height: 1;
+}
+
+.masthead-dek {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
 }
 
 .meta-row {
@@ -558,6 +578,16 @@ main.content.column-page,
   .masthead h1 {
     max-width: none;
     font-size: clamp(2rem, 10vw, 2.9rem);
+  }
+
+  .eyebrow {
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+  }
+
+  .masthead-dek {
+    max-width: none;
+    font-size: 0.98rem;
   }
 
   .masthead-image {

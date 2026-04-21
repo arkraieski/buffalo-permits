@@ -1,7 +1,7 @@
 site_config <- list(
   site = list(
     title = "Buffalo Permits + Crime Tracker",
-    description = "A daily-updated Buffalo dashboard tracking recent crime incidents, permits, and demolition activity.",
+    description = "A daily-updated dashboard tracking recent permits and crime incidents in Buffalo.",
     site_url = "https://arkraieski.github.io/buffalo-permits/",
     image = "opengraph.png",
     image_alt = "Open Graph preview for the Buffalo Permits and Crime Tracker showing the latest reporting window and key metrics.",

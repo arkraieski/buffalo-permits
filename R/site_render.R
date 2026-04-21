@@ -112,6 +112,27 @@ build_note_list <- function(items) {
   )
 }
 
+build_responsive_picture <- function(src, alt, img_class, picture_class = NULL, eager = FALSE) {
+  htmltools::tags$picture(
+    class = picture_class,
+    htmltools::tags$source(
+      media = "(max-width: 720px)",
+      srcset = src
+    ),
+    htmltools::tags$source(
+      media = "(min-width: 721px)",
+      srcset = src
+    ),
+    htmltools::tags$img(
+      src = src,
+      alt = alt,
+      class = img_class,
+      loading = if (eager) "eager" else "lazy",
+      decoding = "async"
+    )
+  )
+}
+
 build_page_head <- function() {
   canonical_url <- site_config$site$site_url
   og_image_url <- paste0(
@@ -157,7 +178,12 @@ build_site_body <- function(render_context, chart_assets) {
             class = "masthead",
             htmltools::tags$section(
               class = "masthead-copy",
+              htmltools::tags$p(class = "eyebrow", "Buffalo, New York"),
               htmltools::tags$h1("Permits and crime incidents, refreshed daily."),
+              htmltools::tags$p(
+                class = "masthead-dek",
+                "A daily Buffalo dashboard tracking recent permits, crime incidents, and demolition activity."
+              ),
               htmltools::tags$div(
                 class = "meta-row",
                 htmltools::tags$div(
@@ -174,10 +200,12 @@ build_site_body <- function(render_context, chart_assets) {
             ),
             htmltools::tags$div(
               class = "masthead-visual",
-              htmltools::tags$img(
+              build_responsive_picture(
                 src = site_config$site$hero_image,
                 alt = "Aerial view of downtown Buffalo, New York",
-                class = "masthead-image"
+                img_class = "masthead-image",
+                picture_class = "masthead-picture",
+                eager = TRUE
               )
             )
           ),
@@ -317,18 +345,20 @@ build_site_body <- function(render_context, chart_assets) {
             class = "bottom-photo-composition",
             htmltools::tags$div(
               class = "bottom-photo-primary",
-              htmltools::tags$img(
+              build_responsive_picture(
                 src = site_config$site$bottom_primary_image,
                 alt = "Aerial view of Buffalo, New York, with a focus on the historic Buffalo Central Terminal",
-                class = "bottom-photo-image bottom-photo-image-primary"
+                img_class = "bottom-photo-image bottom-photo-image-primary",
+                picture_class = "bottom-photo-picture"
               )
             ),
             htmltools::tags$div(
               class = "bottom-photo-archive",
-              htmltools::tags$img(
+              build_responsive_picture(
                 src = site_config$site$bottom_archive_image,
                 alt = "Grain boats and grain elevators on the Erie Canal in Buffalo",
-                class = "bottom-photo-image bottom-photo-image-archive bottom-photo-image-archive-top"
+                img_class = "bottom-photo-image bottom-photo-image-archive bottom-photo-image-archive-top",
+                picture_class = "bottom-photo-picture"
               )
             )
           ),
