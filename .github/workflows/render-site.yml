@@ -28,9 +28,9 @@ jobs:
           use-public-rspm: true
       
       - name: Install system libraries
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
 
       - name: Restore renv library
         uses: r-lib/actions/setup-renv@v2
