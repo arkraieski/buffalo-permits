@@ -580,8 +580,6 @@ main.content.column-page,
 }
 
 @media (max-width: 900px) {
-  .main-map-frame .leaflet-control-layers,
-  .support-map-frame .leaflet-control-layers,
   .main-map-frame .leaflet-control-attribution,
   .support-map-frame .leaflet-control-attribution,
   .main-map-frame .leaflet-control-container .legend,
