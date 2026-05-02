@@ -33,12 +33,24 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
+          r-version: '4.5.3'
           use-public-rspm: true
       
       - name: Install system libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+          sudo apt-get install -y \
+            cmake \
+            gdal-bin \
+            libabsl-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libgdal-dev \
+            libgeos-dev \
+            libproj-dev \
+            libudunits2-dev \
+            libx11-dev \
+            pandoc
 
       - name: Restore renv library
         uses: r-lib/actions/setup-renv@v2
