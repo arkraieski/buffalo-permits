@@ -8,7 +8,7 @@
 ##    - owns data fetching/prep and returns the `site_data` list used here
 ## 2. `build_render_context()` from this file
 ##    - derives labels, ranking tables, and chart inputs from `site_data`
-## 3. `write_daily_chart_images()` from this file
+## 3. `write_chart_images()` from this file
 ##    - writes PNG chart assets using `build_daily_chart_bundle()` from `R/charts.R`
 ## 4. `build_html_document()` from this file
 ##    - assembles the full page HTML using map widgets from `R/maps.R`
@@ -16,7 +16,7 @@
 ##    - emits the structured data consumed by `scripts/generate-og-image.mjs`
 ##
 ## Cross-file dependencies used here:
-## - `build_daily_chart_bundle()` from `R/charts.R`
+## - `build_daily_chart_bundle()` and `build_hourly_crime_chart_bundle()` from `R/charts.R`
 ## - `make_main_map()` and `make_summary_map()` from `R/maps.R`
 ## - formatting helpers and `site_config` from `R/utils.R`
 ##
@@ -30,7 +30,8 @@ build_render_context <- function(site_data) {
     generated_label = format_generated_label(window$generated_at),
     crime_neighborhood_rank = build_crime_rank_table(site_data),
     permit_neighborhood_rank = build_permit_rank_table(site_data),
-    daily_chart_bundle = build_daily_chart_bundle(site_data, format_window_label(window))
+    daily_chart_bundle = build_daily_chart_bundle(site_data, format_window_label(window)),
+    hourly_crime_chart_bundle = build_hourly_crime_chart_bundle(site_data, format_window_label(window))
   )
 }
 
@@ -105,6 +106,48 @@ write_daily_chart_images <- function(daily_chart_bundle, output_dir) {
   }
 
   chart_specs
+}
+
+write_hourly_crime_chart_images <- function(hourly_crime_chart_bundle, output_dir) {
+  ensure_directory(output_dir)
+
+  chart_specs <- list(
+    crime_hourly = list(filename = "crime-incidents-by-hour.png", width = 7, height = 4.2),
+    crime_neighborhood_hours = list(filename = "crime-neighborhood-hour-heatmap.png", width = 8, height = 5.4)
+  )
+
+  bundle_names <- c(
+    crime_hourly = "citywide",
+    crime_neighborhood_hours = "neighborhoods"
+  )
+
+  for (name in names(chart_specs)) {
+    chart_path <- file.path(output_dir, chart_specs[[name]]$filename)
+    plot_bundle <- hourly_crime_chart_bundle[[bundle_names[[name]]]]
+
+    ggplot2::ggsave(
+      filename = chart_path,
+      plot = plot_bundle$plot,
+      device = ragg::agg_png,
+      width = chart_specs[[name]]$width,
+      height = chart_specs[[name]]$height,
+      units = "in",
+      dpi = 144,
+      bg = "white"
+    )
+
+    chart_specs[[name]]$src <- file.path("charts", chart_specs[[name]]$filename)
+    chart_specs[[name]]$alt_text <- plot_bundle$alt_text
+  }
+
+  chart_specs
+}
+
+write_chart_images <- function(render_context, output_dir) {
+  c(
+    write_daily_chart_images(render_context$daily_chart_bundle, output_dir),
+    write_hourly_crime_chart_images(render_context$hourly_crime_chart_bundle, output_dir)
+  )
 }
 
 build_data_table <- function(data, numeric_columns = integer()) {
@@ -371,6 +414,15 @@ build_site_body <- function(render_context, chart_assets) {
                 palette = site_config$palette$crime_fill,
                 value_format = format_number_label
               )
+            )
+          ),
+          htmltools::tags$section(
+            class = "section-block",
+            htmltools::tags$h2("When recent crime incidents happen"),
+            htmltools::tags$div(
+              class = "chart-grid",
+              build_chart_card("All crime incidents by hour", chart_assets$crime_hourly),
+              build_chart_card("Hourly pattern in the busiest neighborhoods", chart_assets$crime_neighborhood_hours)
             )
           ),
           htmltools::tags$section(

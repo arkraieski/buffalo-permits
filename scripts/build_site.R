@@ -56,9 +56,9 @@ reset_site_output(site_dir)
 site_data <- build_site_data()
 ## `build_render_context()` and `build_html_document()` are defined in `R/page_builder.R`.
 render_context <- build_render_context(site_data)
-## `build_daily_chart_bundle()` lives in `R/charts.R`; `write_daily_chart_images()`
-## lives in `R/page_builder.R` and turns those plots into files.
-chart_assets <- write_daily_chart_images(render_context$daily_chart_bundle, chart_dir)
+## Chart builders live in `R/charts.R`; `write_chart_images()` lives in
+## `R/page_builder.R` and turns those plots into files.
+chart_assets <- write_chart_images(render_context, chart_dir)
 html_document <- build_html_document(render_context, chart_assets)
 
 ## Save the page first so htmlwidgets can emit their dependency bundle.

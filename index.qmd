@@ -55,6 +55,7 @@ permit_neighborhood_rank <- site_data$permit_neighborhoods |>
   )
 
 daily_chart_bundle <- build_daily_chart_bundle(site_data, window_label)
+hourly_crime_chart_bundle <- build_hourly_crime_chart_bundle(site_data, window_label)
 ```
 
 ::::::::::::::::::::::::::::::::::::::::: page-shell
@@ -127,6 +128,38 @@ make_summary_map(
 ```
 :::
 ::::::
+
+:::::::::::: section-block
+## When recent crime incidents happen
+
+::::::::: chart-grid
+::: chart-card
+### All crime incidents by hour
+
+```{r}
+#| fig-width: 7
+#| fig-height: 4.2
+#| out-width: "100%"
+#| dev: ragg_png
+#| fig-alt: !expr hourly_crime_chart_bundle$citywide$alt_text
+hourly_crime_chart_bundle$citywide$plot
+```
+:::
+
+::: chart-card
+### Hourly pattern in the busiest neighborhoods
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5.4
+#| out-width: "100%"
+#| dev: ragg_png
+#| fig-alt: !expr hourly_crime_chart_bundle$neighborhoods$alt_text
+hourly_crime_chart_bundle$neighborhoods$plot
+```
+:::
+:::::::::
+::::::::::::
 
 :::::::::::: section-block
 ## Daily totals

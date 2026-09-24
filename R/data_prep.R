@@ -95,7 +95,10 @@ prepare_crime_data <- function(crime_raw, neighborhoods) {
     attach_neighborhoods(neighborhoods) |>
     dplyr::mutate(
       source_id = case_number,
-      event_date = as.Date(incident_datetime, tz = site_config$timezone)
+      event_date = as.Date(incident_datetime, tz = site_config$timezone),
+      incident_hour = lubridate::hour(
+        lubridate::with_tz(incident_datetime, tzone = site_config$timezone)
+      )
     )
 
   points
