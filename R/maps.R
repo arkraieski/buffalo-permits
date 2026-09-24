@@ -69,7 +69,7 @@ neighborhood_popup_html <- function(data, count_col, count_label, value_col = NU
 add_basemap_layers <- function(map) {
   map |>
     leaflet::addProviderTiles(
-      leaflet::providers$CartoDB.Positron,
+      leaflet::providers$Esri.WorldGrayCanvas,
       group = "Light"
     ) |>
     leaflet::addProviderTiles(
@@ -661,7 +661,7 @@ make_summary_map <- function(data, value_col, title, palette, value_format = for
   })
 
   map <- leaflet::leaflet(data, options = build_leaflet_options()) |>
-    leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) |>
+    leaflet::addProviderTiles(leaflet::providers$Esri.WorldGrayCanvas) |>
     leaflet::setView(
       lng = unname(site_config$map$center[["lng"]]),
       lat = unname(site_config$map$center[["lat"]]),
