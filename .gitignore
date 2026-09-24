@@ -6,3 +6,4 @@ node_modules/
 .Rproj.user/
 *.html
 *.utf8.md
+.Rhistory
